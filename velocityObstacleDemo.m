@@ -1,12 +1,13 @@
 %% Clear
 clc; clear; close all ;
-addpath(genpath('agent'), genpath('obstacle'), genpath('ship_models'), genpath('functions')) ;
+addpath(genpath('agent'), genpath('obstacle'), genpath('ship_models'), genpath('function')) ;
 
 %% Map condition
 mapBoundary.xMin = -2 ;
 mapBoundary.xMax = 400 ;
 mapBoundary.yMin = -200 ;
 mapBoundary.yMax = 200 ;
+figure_scale = 2 ;
 
 %% Initial agent
 agent = Agent() ;
@@ -30,8 +31,8 @@ obstacles.obstacle1.radius = 15 ;
 obstacles.obstacle2 = Obstacle() ;
 obstacles.obstacle2.position = [300 ;    % x(m)
                                 150] ;   % y(m)
-obstacles.obstacle2.velocity = [-1.0 ;   % x(m)     % -1.0과 -1.1과 다른 경로양상 보임
-                                -1.0] ; % y(m)      % 세미나 때 활용
+obstacles.obstacle2.velocity = [-1.2 ;   % x(m)     % -1.0과 -1.1과 다른 경로양상 보임
+                                -1.2] ; % y(m)      % 세미나 때 활용
 obstacles.obstacle2.radius = 10 ;
 
 obstacleNames = fieldnames(obstacles) ;
@@ -55,6 +56,7 @@ VisulzeReachableAvoidanceVocities = true ;
 time = 0 ;
 global dt
 dt = 1 ;
+ history_agent_position = agent.position ;
 
 %% Simulation
 while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.xMax ...
@@ -63,7 +65,8 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     %% Visualization
     simulationFigure = figure(1) ;
     figure_position = [-1700, 100] ;
-    figure_size = [1500 600] ;
+    figure_size = [(mapBoundary.xMax - mapBoundary.xMin),...
+                   (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale;
     simulationFigure.Position = [figure_position, figure_size] ;
     daspect([1 1 1])
     grid on ;
@@ -74,6 +77,10 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     % Clear the axes
     cla ;
     hold on ;
+    if time == 0
+        disp('Press enter to start') ;
+        pause() ;
+    end
     
     % Draw the target point or line
     plot(targetLine(:, 1), targetLine(:, 2), 'r') ;
@@ -148,13 +155,21 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     end
   
     %% Draw agent and obstacle position
+    
+    obstacle_color = ['k', 'r']  ;
+    
     viscircles(agent.position(1:2)', agent.radius, 'Color', 'b', 'LineWidth', 1) ;
     for n = 1:numel(fieldnames(obstacles))
         viscircles(obstacles.(obstacleNames{n}).position(1:2)', ...
             obstacles.(obstacleNames{n}).radius, ...
-            'Color', 'r', 'LineWidth', 1) ;
+            'Color', obstacle_color(n), 'LineWidth', 1) ;
     end
         
+    if mod(time, 1) == 0
+        history_agent_position(:, end + 1) = agent.position ;
+    end
+    plot(history_agent_position(1, :), history_agent_position(2, :), '.b') ;
+    
     %% Velocity strategy: to target point
     %{
     distanceToTarget = [] ;
@@ -166,7 +181,7 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     %}
     
     %% Velocity strategy: to target line
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 전략 손봐야함 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Need to be modified %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     [~, maxIndex] = maxk(shiftedReachableAvoidanceVelocities(1, :),...
         round(length(shiftedReachableAvoidanceVelocities) / (50) + 1)) ;
     [~, minIndexOfMaxIndex] = min(abs(shiftedReachableAvoidanceVelocities(2, maxIndex))) ;
