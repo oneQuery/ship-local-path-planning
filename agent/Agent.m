@@ -2,26 +2,27 @@ classdef Agent < handle
     
     properties
         model
-        B = 2.5     % m
+        B = 2.5     % beam(m)
+        L = 4.88    % length(m)
         position
         velocity
-        Rf = 20
-        Ra = 10
-        Rp = 10
-        Rs = 8
+        Rf
+        Ra
+        Rp
+        Rs
         feasibleAcceleration
         reachableVelocities
         rpm_port = 0
         rpm_stbd = 0
-        rpm_rate = 1510 * 1.3
+        rpm_rate = 1510
         rpm_port_min
         rpm_port_max
         rpm_port_grid
         rpm_stbd_min
         rpm_stbd_max
         rpm_stbd_grid
-        rpm_min_limit = -2380 * 1.3
-        rpm_max_limit = 2380 * 1.3
+        rpm_min_limit = -2380
+        rpm_max_limit = 2380
         idx_tau_in_f_grid
         idx_rpm_in_T_grid
     end
@@ -102,6 +103,20 @@ classdef Agent < handle
             obj.rpm_port = obj.rpm_port_grid(idx_rpm_port) ;
             obj.rpm_stbd = obj.rpm_stbd_grid(idx_rpm_stbd) ;
         end
+        
+        function update_ship_domain(obj)
+            vOwn = norm(obj.velocity(1), obj.velocity(2)) ;
+            
+            kAD = 10 ^ (0.3591 * log10(vOwn) + 0.0952) ;
+            kDT = 10 ^ (0.5441 * log10(vOwn) - 0.0795) ;
+            
+            obj.Rf = (1 + 1.34 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
+            obj.Ra = (1 + 0.67 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
+            obj.Rp = (0.2 + 0.75 * kDT) * obj.L ;
+            obj.Rs = (0.2 + kDT) * obj.L ;
+        end
+        
+        
     end
 end
 

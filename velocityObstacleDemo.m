@@ -100,6 +100,9 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     timeString = ['Time: ', num2str(time), ' s'] ;
     text(mapBoundary.xMin, mapBoundary.yMax - 1, timeString) ;
     
+    %% Update ship domain
+    agent.update_ship_domain() ;
+    
     %% Proceed to next step
     % Calculate Collision Cone
     collisionConePoints = collision_cone(agent, obstacles, timeHorizon) ;
@@ -144,6 +147,10 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
         in = inpolygon(shiftedReachableVelocities(1, :), shiftedReachableVelocities(2, :),...
             velocityObstaclePoints{m}(:, 1), velocityObstaclePoints{m}(:, 2)) ;
         inSet(:, m) = in ;
+        hasOverlap = false ;
+        if any(inSet) == 1 ;
+           hasOverlap =  true ;
+        end
     end
     in = any(inSet, 2) ; 
     
@@ -189,19 +196,25 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     [~, ChosenVelocityIndex] = min(distanceToTarget) ;
     %}
     
+    %% Velocity strategy: comply with COLREGS
+    if hasOverlap
+        [~, minIndex] = min(shiftedReachableAvoidanceVelocities(2, :)) ;
+        ChosenVelocityIndex = minIndex ;
+    else
     %% Velocity strategy: to target line
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Need to be modified %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    [~, maxIndex] = maxk(shiftedReachableAvoidanceVelocities(1, :),...
-        round(length(shiftedReachableAvoidanceVelocities) / (50) + 1)) ;
-    [~, minIndexOfMaxIndex] = min(abs(shiftedReachableAvoidanceVelocities(2, maxIndex))) ;
-    ChosenVelocityIndex = maxIndex(minIndexOfMaxIndex) ;
-    
+        [~, maxIndex] = maxk(shiftedReachableAvoidanceVelocities(1, :),...
+            round(length(shiftedReachableAvoidanceVelocities) / (50) + 1)) ;
+        [~, minIndexOfMaxIndex] = min(abs(shiftedReachableAvoidanceVelocities(2, maxIndex))) ;
+        ChosenVelocityIndex = maxIndex(minIndexOfMaxIndex) ;
+    end
 %     [~, idx_nu] = min(abs(shiftedReachableAvoidanceVelocities(2, :))) ;
 %     ChosenVelocityIndex = idx_nu ;
 
 %     [~, idx_nu] = max((shiftedReachableAvoidanceVelocities(1, :))) ;
 %     ChosenVelocityIndex = idx_nu ;
 %     
+
+
     %% Choose the agent's velocity
     agent.velocity = reachableAvoidanceVelocities(:, ChosenVelocityIndex) ;
     
