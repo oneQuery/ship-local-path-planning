@@ -5,7 +5,10 @@ classdef Agent < handle
         B = 2.5     % m
         position
         velocity
-        radius
+        Rf = 20
+        Ra = 10
+        Rp = 10
+        Rs = 8
         feasibleAcceleration
         reachableVelocities
         rpm_port = 0

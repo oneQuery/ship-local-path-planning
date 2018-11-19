@@ -18,7 +18,7 @@ agent.position = [0 ;   % x(m)
 agent.velocity = [1.5 ;   % u(m/s)
                   0 ;   % v(m/s)
                   0] ;  % r(rad/s)
-agent.radius = 5 ;    % (m)
+% agent.radius = 5 ;    % (m)
 
 %% Initial obstacles
 obstacles.obstacle1 = Obstacle() ;
@@ -26,14 +26,21 @@ obstacles.obstacle1.position = [200 ;     % x(m)
                                 0] ;   % y(m)
 obstacles.obstacle1.velocity = [-1.5 ;     % x(m)
                                 0] ;   % y(m)
-obstacles.obstacle1.radius = 15 ;
+obstacles.obstacle1.radius = 5 ;
 
 obstacles.obstacle2 = Obstacle() ;
 obstacles.obstacle2.position = [300 ;    % x(m)
                                 150] ;   % y(m)
-obstacles.obstacle2.velocity = [-1.2 ;   % x(m)     % -1.0과 -1.1과 다른 경로양상 보임
-                                -1.2] ; % y(m)      % 세미나 때 활용
-obstacles.obstacle2.radius = 10 ;
+obstacles.obstacle2.velocity = [-1.2 ;   % x(m)    
+                                -1.2] ; % y(m)      
+obstacles.obstacle2.radius = 3 ;
+
+obstacles.obstacle3 = Obstacle() ;
+obstacles.obstacle3.position = [300 ;    % x(m)
+                                -150] ;   % y(m)
+obstacles.obstacle3.velocity = [-1.2 ;   % x(m)    
+                                1.2] ; % y(m)     
+obstacles.obstacle3.radius = 3 ;
 
 obstacleNames = fieldnames(obstacles) ;
 
@@ -56,7 +63,7 @@ VisulzeReachableAvoidanceVocities = true ;
 time = 0 ;
 global dt
 dt = 1 ;
- history_agent_position = agent.position ;
+history_agent_position = agent.position ;
 
 %% Simulation
 while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.xMax ...
@@ -155,15 +162,17 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     end
   
     %% Draw agent and obstacle position
+    draw_agent(agent) ;
+    draw_obstacle(obstacles) ;
     
-    obstacle_color = ['k', 'r']  ;
-    
-    viscircles(agent.position(1:2)', agent.radius, 'Color', 'b', 'LineWidth', 1) ;
-    for n = 1:numel(fieldnames(obstacles))
-        viscircles(obstacles.(obstacleNames{n}).position(1:2)', ...
-            obstacles.(obstacleNames{n}).radius, ...
-            'Color', obstacle_color(n), 'LineWidth', 1) ;
-    end
+%     obstacle_color = ['k', 'r']  ;
+%     
+%     viscircles(agent.position(1:2)', agent.radius, 'Color', 'b', 'LineWidth', 1) ;
+%     for n = 1:numel(fieldnames(obstacles))
+%         viscircles(obstacles.(obstacleNames{n}).position(1:2)', ...
+%             obstacles.(obstacleNames{n}).radius, ...
+%             'Color', obstacle_color(n), 'LineWidth', 1) ;
+%     end
         
     if mod(time, 1) == 0
         history_agent_position(:, end + 1) = agent.position ;
@@ -212,15 +221,15 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
         obstacles.(obstacleNames{p}).setNextPosition(dt) ;
     end
     
-    for q = 1:numel(fieldnames(obstacles))
-        if pdist([agent.position(1:2)'; obstacles.(obstacleNames{q}).position(1:2)']) <= ...
-                agent.radius + obstacles.(obstacleNames{q}).radius 
-            text((mapBoundary.xMin + mapBoundary.xMax) / 2,...
-                (mapBoundary.yMin + mapBoundary.yMin) / 2,...
-                'Crash occured', 'Color', 'red', 'FontSize', 20) ;
-            break
-        end
-    end
+%     for q = 1:numel(fieldnames(obstacles))
+%         if pdist([agent.position(1:2)'; obstacles.(obstacleNames{q}).position(1:2)']) <= ...
+%                 agent.radius + obstacles.(obstacleNames{q}).radius 
+%             text((mapBoundary.xMin + mapBoundary.xMax) / 2,...
+%                 (mapBoundary.yMin + mapBoundary.yMin) / 2,...
+%                 'Crash occured', 'Color', 'red', 'FontSize', 20) ;
+%             break
+%         end
+%     end
 
     %% Udpate the rpm the ship took
     agent.update_rpm(ChosenVelocityIndex)

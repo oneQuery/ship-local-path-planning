@@ -12,26 +12,49 @@ for obstacleIndex = 1:numel(obstacleNames)
     obstacle = obstacles.(obstacleNames{obstacleIndex}) ;
     
     %% Map into Configuration Space
-    AHatRadius = agent.radius - agent.radius ;
-    BHatRadius = obstacle.radius + agent.radius;
+    % About penetrating line through the centers of A and B
+    losLength = pdist([agent.position(1:2)'; obstacle.position(1:2)']) ;
     
+    losDifference = obstacle.position(1:2) - agent.position(1:2) ;
+    losAngleEarth = atan2(losDifference(2), losDifference(1)) ;
+    
+    losAngleBody = [losAngleEarth - atan2(agent.velocity(2), agent.velocity(1)) ;
+                    pi - (losAngleEarth - atan2(agent.velocity(2), agent.velocity(1))) ;
+                    -pi/2 + (losAngleEarth - atan2(agent.velocity(2), agent.velocity(1))) ;
+                    pi/2 + (losAngleEarth - atan2(agent.velocity(2), agent.velocity(1)))] ;
+                    
+    
+
+    
+    % Angles for collision cone
+    radii = obstacle.radius + [agent.Rf; agent.Ra; agent.Rp; agent.Rs] ;
+    lengthToRadiiVertex = sqrt(losLength^2 + radii.^2 - 2*losLength.*radii.*(cos(losAngleBody))) ;  % wrong
+    
+%     angleToRadiiVertex = losAngleEarth + asin(radii./lengthToRadiiVertex) ;
+
+    
+%     AHatRadius = agent.radius - agent.radius ;
+%     BHatRadius1 = quaternion_radii(contactAngle1);
+%     BHatRadius2 = quaternion_radii(contactAngle2);
+%     BHatRadius1 = ;
+%     BHatRadius2 = ;
+% 
     AHatCenter = agent.position(1:2)' ;
-    BHatCenter = obstacle.position(1:2)' ;
+%     BHatCenter = obstacle.position(1:2)' ;
     
     %% Calculate the two tangents from AHat to BHat as a [start point, angle]
-    % Distance between the centers of AHat and BHat
-    tempDistance = pdist([agent.position(1:2)'; obstacle.position(1:2)']) ;
+    
     
     % Angle between tangent1 and the center penetrating line
-    tempAngle1 = asin(BHatRadius/tempDistance) ;
+%     tempAngle1 = asin(BHatRadius/tempDistance) ;
+    tempAngle1 = max(asin(radii./lengthToRadiiVertex.*sin(losAngleBody))) ;
+    tempAngle2 = min(asin(radii./lengthToRadiiVertex.*sin(losAngleBody))) ;
     
-    % Center line angle of Collision Cone
-    Difference = obstacle.position(1:2) - agent.position(1:2) ;
-    centerLineAngle = atan2(Difference(2), Difference(1)) ;
+
     
     % Angle of tangent1 and tangent2
-    tangent1Angle = centerLineAngle + tempAngle1 ;
-    tangent2Angle = centerLineAngle - tempAngle1 ;
+    tangent1Angle = losAngleEarth + tempAngle1 ;
+    tangent2Angle = losAngleEarth + tempAngle2 ;
     
     %% Initial Collision Cone
     % Collision Cone Points
@@ -54,15 +77,15 @@ for obstacleIndex = 1:numel(obstacleNames)
       
     %% For new time horizon velocities
     CHat_scale = 1 / timeHorizon ;
-    CHat_center(1) = AHatCenter(1) + Difference(1) * CHat_scale ;
-    CHat_center(2) = AHatCenter(2) + Difference(2) * CHat_scale ;
+    CHat_center(1) = AHatCenter(1) + losDifference(1) * CHat_scale ;
+    CHat_center(2) = AHatCenter(2) + losDifference(2) * CHat_scale ;
     CHat_theta = pi / 2 - tempAngle1 ;
-    CHat_abs_theta1 = (centerLineAngle + pi) + CHat_theta ; 
-    CHat_abs_theta2 = (centerLineAngle + pi) - CHat_theta ;
+    CHat_abs_theta1 = (losAngleEarth + pi) + CHat_theta ; 
+    CHat_abs_theta2 = (losAngleEarth + pi) - CHat_theta ;
     Chat_theta_grid = sort(linspace(CHat_abs_theta1, CHat_abs_theta2, 3), 'descend')' ;
     
     [collisionConeTimeHorizonPoint1, collisionConetimeHorizonPoint2] = ...
-        angle_to_point(CHat_center, Chat_theta_grid, BHatRadius * CHat_scale) ;
+        angle_to_point(CHat_center, Chat_theta_grid, (agent.Rf + agent.Ra) * CHat_scale) ;
     collisionConeTimeHorizonPoints = ...
         [collisionConeTimeHorizonPoint1; collisionConetimeHorizonPoint2] ;
 
