@@ -22,25 +22,25 @@ agent.velocity = [1.5 ;   % u(m/s)
 
 %% Initial obstacles
 obstacles.obstacle1 = Obstacle() ;
-obstacles.obstacle1.position = [300 ;     % x(m)
+obstacles.obstacle1.position = [80 ;     % x(m)
+                                5] ;   % y(m)
+obstacles.obstacle1.velocity = [0.3 ;     % x(m)
                                 0] ;   % y(m)
-obstacles.obstacle1.velocity = [-1.5 ;     % x(m)
-                                0] ;   % y(m)
-obstacles.obstacle1.radius = 7 ;
+obstacles.obstacle1.radius = 5 ;
 
-% obstacles.obstacle2 = Obstacle() ;
-% obstacles.obstacle2.position = [300 ;    % x(m)
-%                                 150] ;   % y(m)
-% obstacles.obstacle2.velocity = [-1.2 ;   % x(m)    
-%                                 -1.2] ; % y(m)      
-% obstacles.obstacle2.radius = 15 ;
-% 
-% obstacles.obstacle3 = Obstacle() ;
-% obstacles.obstacle3.position = [300 ;    % x(m)
-%                                 -150] ;   % y(m)
-% obstacles.obstacle3.velocity = [-1.2 ;   % x(m)    
-%                                 1.2] ; % y(m)     
-% obstacles.obstacle3.radius = 10 ;
+obstacles.obstacle2 = Obstacle() ;
+obstacles.obstacle2.position = [230 ;    % x(m)
+                                -30] ;   % y(m)
+obstacles.obstacle2.velocity = [-1 ;   % x(m)    
+                                0] ; % y(m)      
+obstacles.obstacle2.radius = 5 ;
+
+obstacles.obstacle3 = Obstacle() ;
+obstacles.obstacle3.position = [270 ;    % x(m)
+                                -50] ;   % y(m)
+obstacles.obstacle3.velocity = [-1 ;   % x(m)    
+                                0] ; % y(m)     
+obstacles.obstacle3.radius = 5 ;
 
 obstacleNames = fieldnames(obstacles) ;
 
@@ -60,6 +60,7 @@ willVisualizeReachableVelocities = false ;
 willVisualizeReachableAvoidanceVocities = false ;
 willVisualizeShipDomain = false ;
 willVisualizeVelocityVector = false ;
+checkTime = 50 ;
 
 %% Initial condition for simulation
 time = 0 ;
@@ -68,8 +69,8 @@ dt = 1 ;
 agentPositionHistory1 = agent.position ;
 agentPositionHistory2 = agent.position ;
 for obstacleIndex = 1:numel(obstacleNames)
-    obstaclePositionHistory1{obstacleIndex}(:, obstacleIndex) = obstacles.(obstacleNames{obstacleIndex}).position ;
-    obstaclePositionHistory2{obstacleIndex}(:, obstacleIndex) = obstacles.(obstacleNames{obstacleIndex}).position ;
+    obstaclePositionHistory1{obstacleIndex} = obstacles.(obstacleNames{obstacleIndex}).position ;
+    obstaclePositionHistory2{obstacleIndex} = obstacles.(obstacleNames{obstacleIndex}).position ;
 end
 timeStringHistory = {'0 s'} ;
 
@@ -238,7 +239,7 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     end
     
     %   Draw time at corresponding position of agent and obstacles
-    if mod(time, 30) == 0
+    if mod(time, checkTime) == 0
         agentPositionHistory2(:, end + 1) = agent.position ;
         for obstacleIndex = 1:numel(obstacleNames)
             obstaclePositionHistory2{obstacleIndex}(:, end + 1) =...
