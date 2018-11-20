@@ -1,4 +1,4 @@
-function draw_agent(agent)
+function draw_agent(agent, willVisualizeShipDomain)
 %DRAW_AGENT Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -15,8 +15,10 @@ RsY = agent.position(2) - agent.Rs * cos(headingAngle) ;
 RX = [RfX, RpX, RaX, RsX, RfX] ;
 RY = [RfY, RpY, RaY, RsY, RfY] ;
 
-plot(RX, RY, 'b:', 'LineWidth', 1) ;
-% viscircles(agent.position(1:2)', agent.radius, 'Color', 'b', 'LineWidth', 1) ;
+if willVisualizeShipDomain
+    plot(RX, RY, 'b:', 'LineWidth', 1) ;
+end
+
 ellipse(agent.position(1), agent.position(2), agent.L, agent.B, atan2(agent.velocity(2), agent.velocity(1)), 'b') ;
 end
 

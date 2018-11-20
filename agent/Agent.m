@@ -13,8 +13,8 @@ classdef Agent < handle
         Rs
         feasibleAcceleration
         reachableVelocities
-        rpm_port = 0
-        rpm_stbd = 0
+        rpm_port = 2380
+        rpm_stbd = 2380
         rpm_rate = 1510
         rpm_port_min
         rpm_port_max
@@ -54,7 +54,7 @@ classdef Agent < handle
             end
 
             %% Rpm grid
-            N_rpm_grid = 10 ;
+            N_rpm_grid = 100 ;
             idx_rpm_port = 1:N_rpm_grid ;
             idx_rpm_stbd = 1:N_rpm_grid ;
             
@@ -65,12 +65,12 @@ classdef Agent < handle
             for i = 1:N_rpm_grid
                 if obj.rpm_port_grid(i) < 0
                     T_port_grid(i) = -1.189e-5 * obj.rpm_port_grid(i)^2 + 0.071 * obj.rpm_port_grid(i) + 4.331 ;
-                elseif obj.rpm_port_grid(i) > 0
+                elseif obj.rpm_port_grid(i) >= 0
                     T_port_grid(i) = 3.54e-5 * obj.rpm_port_grid(i)^2 + 0.084 * obj.rpm_port_grid(i) - 3.798 ;  
                 end
                 if obj.rpm_stbd_grid(i) < 0
                     T_stbd_grid(i) = -1.189e-5 * obj.rpm_stbd_grid(i)^2 + 0.071 * obj.rpm_stbd_grid(i) + 4.331 ;
-                elseif obj.rpm_stbd_grid(i) > 0
+                elseif obj.rpm_stbd_grid(i) >= 0
                     T_stbd_grid(i) = 3.54e-5 * obj.rpm_stbd_grid(i)^2 + 0.084 * obj.rpm_stbd_grid(i) - 3.798 ;  
                 end
             end
@@ -106,7 +106,7 @@ classdef Agent < handle
         end
         
         function update_ship_domain(obj)
-            vOwn = norm(obj.velocity(1), obj.velocity(2)) ;
+            vOwn = sqrt(obj.velocity(1)^2 + obj.velocity(2)^2) ;
             
             kAD = 10 ^ (0.3591 * log10(vOwn) + 0.0952) ;
             kDT = 10 ^ (0.5441 * log10(vOwn) - 0.0795) ;
