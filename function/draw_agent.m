@@ -15,7 +15,8 @@ RsY = agent.position(2) - agent.Rs * cos(headingAngle) ;
 RX = [RfX, RpX, RaX, RsX, RfX] ;
 RY = [RfY, RpY, RaY, RsY, RfY] ;
 
-plot(RX, RY, 'b', 'LineWidth', 1) ;
-
+plot(RX, RY, 'b:', 'LineWidth', 1) ;
+% viscircles(agent.position(1:2)', agent.radius, 'Color', 'b', 'LineWidth', 1) ;
+ellipse(agent.position(1), agent.position(2), agent.L, agent.B, atan2(agent.velocity(2), agent.velocity(1)), 'b') ;
 end
 

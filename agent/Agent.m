@@ -4,6 +4,7 @@ classdef Agent < handle
         model
         B = 2.5     % beam(m)
         L = 4.88    % length(m)
+        radius = 4.88
         position
         velocity
         Rf
@@ -110,10 +111,10 @@ classdef Agent < handle
             kAD = 10 ^ (0.3591 * log10(vOwn) + 0.0952) ;
             kDT = 10 ^ (0.5441 * log10(vOwn) - 0.0795) ;
             
-            obj.Rf = (1 + 1.34 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
-            obj.Ra = (1 + 0.67 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
-            obj.Rp = (0.2 + 0.75 * kDT) * obj.L ;
-            obj.Rs = (0.2 + kDT) * obj.L ;
+            obj.Rf = obj.L/2 + (1 + 1.34 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
+            obj.Ra = obj.L/2 + (1 + 0.67 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
+            obj.Rp = obj.B/2 + (0.2 + 0.75 * kDT) * obj.L ;
+            obj.Rs = obj.B/2 + (0.2 + kDT) * obj.L ;
         end
         
         

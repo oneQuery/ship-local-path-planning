@@ -3,7 +3,7 @@ clc; clear; close all ;
 addpath(genpath('agent'), genpath('obstacle'), genpath('ship_models'), genpath('function')) ;
 
 %% Map condition
-mapBoundary.xMin = -2 ;
+mapBoundary.xMin = -50 ;
 mapBoundary.xMax = 400 ;
 mapBoundary.yMin = -200 ;
 mapBoundary.yMax = 200 ;
@@ -15,7 +15,7 @@ agent.model = WMAV2016() ;
 agent.position = [0 ;   % x(m)
                  0 ;    % y(m)
                  0] ;     % psi(rad)
-agent.velocity = [1.5 ;   % u(m/s)
+agent.velocity = [10 ;   % u(m/s)
                   0 ;   % v(m/s)
                   0] ;  % r(rad/s)
 % agent.radius = 5 ;    % (m)
@@ -26,21 +26,21 @@ obstacles.obstacle1.position = [200 ;     % x(m)
                                 0] ;   % y(m)
 obstacles.obstacle1.velocity = [-1.5 ;     % x(m)
                                 0] ;   % y(m)
-obstacles.obstacle1.radius = 5 ;
+obstacles.obstacle1.radius = 10 ;
 
 obstacles.obstacle2 = Obstacle() ;
 obstacles.obstacle2.position = [300 ;    % x(m)
                                 150] ;   % y(m)
 obstacles.obstacle2.velocity = [-1.2 ;   % x(m)    
                                 -1.2] ; % y(m)      
-obstacles.obstacle2.radius = 3 ;
+obstacles.obstacle2.radius = 15 ;
 
 obstacles.obstacle3 = Obstacle() ;
 obstacles.obstacle3.position = [300 ;    % x(m)
                                 -150] ;   % y(m)
 obstacles.obstacle3.velocity = [-1.2 ;   % x(m)    
                                 1.2] ; % y(m)     
-obstacles.obstacle3.radius = 3 ;
+obstacles.obstacle3.radius = 10 ;
 
 obstacleNames = fieldnames(obstacles) ;
 
@@ -55,7 +55,7 @@ targetLine = [targetLineX, targetLineY] ;
 % targetPoint = [0, 30] ;
 
 %% Visualization setting
-VisualizeVelocityObstacle = true ;
+VisualizeVelocityObstacle = false ;
 VisualizeReachableVelocities = true ;
 VisulzeReachableAvoidanceVocities = true ;
 
@@ -99,6 +99,24 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     time = time + dt ;
     timeString = ['Time: ', num2str(time), ' s'] ;
     text(mapBoundary.xMin, mapBoundary.yMax - 1, timeString) ;
+    
+    %% Obstacle course change
+    if time > 60
+        obstacles.obstacle1.velocity = [-1.5 ;
+                                        -1.5] ;
+    end
+    if time > 180
+        obstacles.obstacle2.velocity = [-1.2 ;   % x(m)
+                                        0] ; % y(m)
+    end
+    if time > 100
+        obstacles.obstacle3.velocity = [-2 ;   % x(m)
+                                        0] ; % y(m)
+    end
+    if time > 130
+        obstacles.obstacle3.velocity = [-1.3 ;   % x(m)
+                                        -1.3] ; % y(m)
+    end
     
     %% Update ship domain
     agent.update_ship_domain() ;
@@ -147,25 +165,44 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
         in = inpolygon(shiftedReachableVelocities(1, :), shiftedReachableVelocities(2, :),...
             velocityObstaclePoints{m}(:, 1), velocityObstaclePoints{m}(:, 2)) ;
         inSet(:, m) = in ;
-        hasOverlap = false ;
-        if any(inSet) == 1 ;
-           hasOverlap =  true ;
+    end
+    
+    % Judge the reachable velocities ovelapped to collision cone
+    hasAllOverlap = false ;
+    hasPartialOverlap = false ;
+    for obstacleIndex = 1:size(inSet, 2)
+        if all(inSet(:, obstacleIndex)) == 1
+            hasAllOverlap = true ;
+            hasPartialOverlap = false ;
+            break
+        elseif any(inSet(:, obstacleIndex)) == 1
+            hasPartialOverlap = true ;
+            hasAllOverlap = false ;
         end
     end
-    in = any(inSet, 2) ; 
     
-    shiftedReachableAvoidanceVelocities = shiftedReachableVelocities(:, ~in) ;
-    reachableAvoidanceVelocities = shiftedReachableAvoidanceVelocities - agent.position ;
-    if isempty(reachableAvoidanceVelocities)
-        text(mapBoundary.xMin, (mapBoundary.yMin + mapBoundary.yMax) / 2, ...
-            'Nothing reachable avoidance velocities', 'FontSize', 20, 'Color', 'r') ;
-        break
-    end
+%     if all(inSet) == 1      % nothing reachable velocities
+%         hasAllOverlap = true ;
+%     elseif any(inSet) == 1  % has some reachable velocities
+%         hasPartialOverlap =  true ;
+%     end
+    
+    in = any(inSet, 2) ;
+    
+    shiftedReachableAvoidanceVelocitiesOut = shiftedReachableVelocities(:, ~in) ;
+    reachableVelocities = shiftedReachableVelocities - agent.position ;
+    reachableAvoidanceVelocitiesOut = shiftedReachableAvoidanceVelocitiesOut - agent.position ;
+    
+%     if isempty(reachableAvoidanceVelocities)
+%         text(mapBoundary.xMin, (mapBoundary.yMin + mapBoundary.yMax) / 2, ...
+%             'Nothing reachable avoidance velocities', 'FontSize', 20, 'Color', 'r') ;
+%         break
+%     end
     
     %% Draw reachable avoidance velocities
     if VisulzeReachableAvoidanceVocities
-        plot(shiftedReachableAvoidanceVelocities(1, :),...
-            shiftedReachableAvoidanceVelocities(2, :), '.') ;
+        plot(shiftedReachableAvoidanceVelocitiesOut(1, :),...
+            shiftedReachableAvoidanceVelocitiesOut(2, :), '.') ;
     end
   
     %% Draw agent and obstacle position
@@ -196,16 +233,24 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     [~, ChosenVelocityIndex] = min(distanceToTarget) ;
     %}
     
-    %% Velocity strategy: comply with COLREGS
-    if hasOverlap
-        [~, minIndex] = min(shiftedReachableAvoidanceVelocities(2, :)) ;
+    %% Velocity strategy: escape collision cone
+    if hasAllOverlap  
+        [~, minIndex] = min(shiftedReachableVelocities(1, :)) ;
         ChosenVelocityIndex = minIndex ;
+        agent.velocity = reachableVelocities(:, ChosenVelocityIndex) ;
+    %% Velocity strategy: comply with COLREGS
+    elseif hasPartialOverlap
+        [~, minIndex] = min(shiftedReachableAvoidanceVelocitiesOut(2, :)) ;
+        ChosenVelocityIndex = minIndex ;
+        agent.velocity = reachableAvoidanceVelocitiesOut(:, ChosenVelocityIndex) ;     % Cosse velocity
     else
     %% Velocity strategy: to target line
-        [~, maxIndex] = maxk(shiftedReachableAvoidanceVelocities(1, :),...
-            round(length(shiftedReachableAvoidanceVelocities) / (50) + 1)) ;
-        [~, minIndexOfMaxIndex] = min(abs(shiftedReachableAvoidanceVelocities(2, maxIndex))) ;
+        [~, maxIndex] = maxk(shiftedReachableAvoidanceVelocitiesOut(1, :),...
+            round(length(shiftedReachableAvoidanceVelocitiesOut) / (4) + 1)) ;
+        [~, minIndexOfMaxIndex] = min(abs(shiftedReachableAvoidanceVelocitiesOut(2, maxIndex))) ;
         ChosenVelocityIndex = maxIndex(minIndexOfMaxIndex) ;
+        agent.velocity = reachableAvoidanceVelocitiesOut(:, ChosenVelocityIndex) ;     % Choose velocity
+
     end
 %     [~, idx_nu] = min(abs(shiftedReachableAvoidanceVelocities(2, :))) ;
 %     ChosenVelocityIndex = idx_nu ;
@@ -214,9 +259,6 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
 %     ChosenVelocityIndex = idx_nu ;
 %     
 
-
-    %% Choose the agent's velocity
-    agent.velocity = reachableAvoidanceVelocities(:, ChosenVelocityIndex) ;
     
     %% Draw the veloity vector of agent and obstacle
     quiver(agent.position(1), agent.position(2),...
