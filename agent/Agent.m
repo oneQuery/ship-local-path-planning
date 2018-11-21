@@ -106,15 +106,28 @@ classdef Agent < handle
         end
         
         function update_ship_domain(obj)
-            vOwn = sqrt(obj.velocity(1)^2 + obj.velocity(2)^2) ;
+            vOwnMeterPerSec = sqrt(obj.velocity(1)^2 + obj.velocity(2)^2) ;
+            vOwnKnot = 1.94384 * vOwnMeterPerSec ;
             
-            kAD = 10 ^ (0.3591 * log10(vOwn) + 0.0952) ;
-            kDT = 10 ^ (0.5441 * log10(vOwn) - 0.0795) ;
+            kAD = 10 ^ (0.3591 * log10(vOwnKnot) + 0.0952) ;
+            kDT = 10 ^ (0.5441 * log10(vOwnKnot) - 0.0795) ;
             
-            obj.Rf = obj.L/2 + (1 + 1.34 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
-            obj.Ra = obj.L/2 + (1 + 0.67 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
-            obj.Rp = obj.B/2 + (0.2 + 0.75 * kDT) * obj.L ;
-            obj.Rs = obj.B/2 + (0.2 + kDT) * obj.L ;
+            % With Kijima ship domain model
+%             obj.Rf = obj.L/2 + (1 + 1.34 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
+%             obj.Ra = obj.L/2 + (1 + 0.67 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
+%             obj.Rp = obj.B/2 + (0.2 + 0.75 * kDT) * obj.L ;
+%             obj.Rs = obj.B/2 + (0.2 + kDT) * obj.L ;
+            
+            obj.Rf = (1 + 1.34 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
+            obj.Ra = (1 + 0.67 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
+            obj.Rp = (0.2 + 0.75 * kDT) * obj.L ;
+            obj.Rs = (0.2 + kDT) * obj.L ;
+            
+            % Without any ship domain
+%             obj.Rf = 0 ;
+%             obj.Ra = 0 ;
+%             obj.Rp = 0 ;
+%             obj.Rs = 0 ;
         end
         
         

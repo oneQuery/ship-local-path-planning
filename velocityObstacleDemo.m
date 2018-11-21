@@ -22,25 +22,28 @@ agent.velocity = [1.5 ;   % u(m/s)
 
 %% Initial obstacles
 obstacles.obstacle1 = Obstacle() ;
-obstacles.obstacle1.position = [80 ;     % x(m)
-                                5] ;   % y(m)
-obstacles.obstacle1.velocity = [0.3 ;     % x(m)
-                                0] ;   % y(m)
+obstacles.obstacle1.position = [150 ;     % x(m)
+                                150] ;   % y(m)
+obstacles.obstacle1.velocity = [0 ;     % x(m)
+                                -1.5] ;   % y(m)
 obstacles.obstacle1.radius = 5 ;
 
-obstacles.obstacle2 = Obstacle() ;
-obstacles.obstacle2.position = [230 ;    % x(m)
-                                -30] ;   % y(m)
-obstacles.obstacle2.velocity = [-1 ;   % x(m)    
-                                0] ; % y(m)      
-obstacles.obstacle2.radius = 5 ;
+% obstacles.obstacle2 = Obstacle() ;
+% obstacles.obstacle2.position = [230 ;    % x(m)
+%                                 -30] ;   % y(m)
+% obstacles.obstacle2.velocity = [-1 ;   % x(m)    
+%                                 0] ; % y(m)      
+% obstacles.obstacle2.radius = 5 ;
+% 
+% obstacles.obstacle3 = Obstacle() ;
+% obstacles.obstacle3.position = [270 ;    % x(m)
+%                                 -50] ;   % y(m)
+% obstacles.obstacle3.velocity = [-1 ;   % x(m)    
+%                                 0] ; % y(m)     
+% obstacles.obstacle3.radius = 5 ;
 
-obstacles.obstacle3 = Obstacle() ;
-obstacles.obstacle3.position = [270 ;    % x(m)
-                                -50] ;   % y(m)
-obstacles.obstacle3.velocity = [-1 ;   % x(m)    
-                                0] ; % y(m)     
-obstacles.obstacle3.radius = 5 ;
+obstacleTurningRate = 5 * (pi / 180) ;
+obstacleTurningAngle = 0 ;
 
 obstacleNames = fieldnames(obstacles) ;
 
@@ -58,21 +61,24 @@ targetLine = [targetLineX, targetLineY] ;
 willVisualizeVelocityObstacle = false ;
 willVisualizeReachableVelocities = false ;
 willVisualizeReachableAvoidanceVocities = false ;
-willVisualizeShipDomain = false ;
+willVisualizeShipDomain = true ;
 willVisualizeVelocityVector = false ;
 checkTime = 50 ;
 
 %% Initial condition for simulation
+isCrashed = false ;
+
 time = 0 ;
 global dt
 dt = 1 ;
+timeStringHistory = {'0 s'} ;
+
 agentPositionHistory1 = agent.position ;
 agentPositionHistory2 = agent.position ;
 for obstacleIndex = 1:numel(obstacleNames)
     obstaclePositionHistory1{obstacleIndex} = obstacles.(obstacleNames{obstacleIndex}).position ;
     obstaclePositionHistory2{obstacleIndex} = obstacles.(obstacleNames{obstacleIndex}).position ;
 end
-timeStringHistory = {'0 s'} ;
 
 %% Simulation
 while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.xMax ...
@@ -115,10 +121,25 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     text(mapBoundary.xMin + 2, mapBoundary.yMax - 12, speedString) ;
     
     %% Obstacle course change
-%     if time > 60
-%         obstacles.obstacle1.velocity = [-1.5 ;
-%                                         -1.5] ;
-%     end
+    if 60 <= time && time < 70
+        obstacleTurningAngle = obstacleTurningAngle + obstacleTurningRate ;
+        obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
+        obstacles.obstacle1.velocity = obstacleSpeed...
+                                        * [-sin(obstacleTurningAngle);
+                                           -cos(obstacleTurningAngle)] ;
+    elseif 90 <= time && time < 100
+        obstacleTurningAngle = obstacleTurningAngle - obstacleTurningRate ;
+        obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
+        obstacles.obstacle1.velocity = obstacleSpeed...
+                                        * [-sin(obstacleTurningAngle);
+                                           -cos(obstacleTurningAngle)] ;
+   elseif 130 <= time && time < 140
+        obstacleTurningAngle = obstacleTurningAngle + obstacleTurningRate ;
+        obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
+        obstacles.obstacle1.velocity = obstacleSpeed...
+                                        * [sin(obstacleTurningAngle);
+                                           -cos(obstacleTurningAngle)] ;
+    end
 %     if time > 180
 %         obstacles.obstacle2.velocity = [-1.2 ;   % x(m)
 %                                         0] ; % y(m)
@@ -250,14 +271,14 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     
     for timeTextIndex = 1:length(timeStringHistory)
         plot(agentPositionHistory2(1, :), agentPositionHistory2(2, :), 'b.', 'MarkerSize', 20) ;
-        text(agentPositionHistory2(1, timeTextIndex)-4,...
-            agentPositionHistory2(2, timeTextIndex)-4,...
+        text(agentPositionHistory2(1, timeTextIndex)-5,...
+            agentPositionHistory2(2, timeTextIndex)-5,...
             timeStringHistory{timeTextIndex}) ;
         for obstacleIndex = 1:numel(obstacleNames)
             plot(obstaclePositionHistory2{obstacleIndex}(1, :),...
                 obstaclePositionHistory2{obstacleIndex}(2, :), 'r.', 'MarkerSize', 20) ;
-            text(obstaclePositionHistory2{obstacleIndex}(1, timeTextIndex)-4,...
-                obstaclePositionHistory2{obstacleIndex}(2, timeTextIndex)-4,...
+            text(obstaclePositionHistory2{obstacleIndex}(1, timeTextIndex)-5,...
+                obstaclePositionHistory2{obstacleIndex}(2, timeTextIndex)-5,...
                 timeStringHistory{timeTextIndex}) ;
         end
     end
@@ -321,16 +342,17 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     end
     
     %% Crash
-%     for q = 1:numel(fieldnames(obstacles))
-%         if pdist([agent.position(1:2)'; obstacles.(obstacleNames{q}).position(1:2)']) <= ...
-%                 agent.radius + obstacles.(obstacleNames{q}).radius 
-%             text((mapBoundary.xMin + mapBoundary.xMax) / 2,...
-%                 (mapBoundary.yMin + mapBoundary.yMin) / 2,...
-%                 'Crash occured', 'Color', 'red', 'FontSize', 20) ;
-%             break
-%         end
-%     end
-
+    for q = 1:numel(fieldnames(obstacles))
+        if pdist([agent.position(1:2)'; obstacles.(obstacleNames{q}).position(1:2)']) <= ...
+                agent.radius + obstacles.(obstacleNames{q}).radius 
+            text(mapBoundary.xMax - 70, mapBoundary.yMin + 10,...
+                'Crashed', 'Color', 'red', 'FontSize', 20) ;
+            isCrashed = true ;
+        end
+    end
+    if isCrashed
+        break
+    end
     %% Udpate the rpm the ship took
     agent.update_rpm(ChosenVelocityIndex)
 end
