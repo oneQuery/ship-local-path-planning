@@ -22,25 +22,25 @@ agent.velocity = [1.5 ;   % u(m/s)
 
 %% Initial obstacles
 obstacles.obstacle1 = Obstacle() ;
-obstacles.obstacle1.position = [150 ;     % x(m)
-                                150] ;   % y(m)
-obstacles.obstacle1.velocity = [0 ;     % x(m)
-                                -1.5] ;   % y(m)
+obstacles.obstacle1.position = [200 ;     % x(m)
+                                100] ;   % y(m)
+obstacles.obstacle1.velocity = [-1 ;     % x(m)
+                                -1] ;   % y(m)
 obstacles.obstacle1.radius = 5 ;
 
-% obstacles.obstacle2 = Obstacle() ;
-% obstacles.obstacle2.position = [230 ;    % x(m)
-%                                 -30] ;   % y(m)
-% obstacles.obstacle2.velocity = [-1 ;   % x(m)    
-%                                 0] ; % y(m)      
-% obstacles.obstacle2.radius = 5 ;
-% 
-% obstacles.obstacle3 = Obstacle() ;
-% obstacles.obstacle3.position = [270 ;    % x(m)
-%                                 -50] ;   % y(m)
-% obstacles.obstacle3.velocity = [-1 ;   % x(m)    
-%                                 0] ; % y(m)     
-% obstacles.obstacle3.radius = 5 ;
+obstacles.obstacle2 = Obstacle() ;
+obstacles.obstacle2.position = [230 ;    % x(m)
+                                -30] ;   % y(m)
+obstacles.obstacle2.velocity = [-1 ;   % x(m)    
+                                0] ; % y(m)      
+obstacles.obstacle2.radius = 5 ;
+
+obstacles.obstacle3 = Obstacle() ;
+obstacles.obstacle3.position = [270 ;    % x(m)
+                                -20] ;   % y(m)
+obstacles.obstacle3.velocity = [-1 ;   % x(m)    
+                                0] ; % y(m)     
+obstacles.obstacle3.radius = 5 ;
 
 obstacleTurningRate = 5 * (pi / 180) ;
 obstacleTurningAngle = 0 ;
@@ -48,7 +48,7 @@ obstacleTurningAngle = 0 ;
 obstacleNames = fieldnames(obstacles) ;
 
 %% Time horizon
-timeHorizon = 30;
+timeHorizon = 60;
 
 %% Mission of agent
 N_line_grid = 5 ;
@@ -58,11 +58,11 @@ targetLine = [targetLineX, targetLineY] ;
 % targetPoint = [0, 30] ;
 
 %% Visualization setting
-willVisualizeVelocityObstacle = false ;
-willVisualizeReachableVelocities = false ;
-willVisualizeReachableAvoidanceVocities = false ;
+willVisualizeVelocityObstacle = true ;
+willVisualizeReachableVelocities = true ;
+willVisualizeReachableAvoidanceVocities = true ;
 willVisualizeShipDomain = true ;
-willVisualizeVelocityVector = false ;
+willVisualizeVelocityVector = true ;
 checkTime = 50 ;
 
 %% Initial condition for simulation
@@ -80,21 +80,34 @@ for obstacleIndex = 1:numel(obstacleNames)
     obstaclePositionHistory2{obstacleIndex} = obstacles.(obstacleNames{obstacleIndex}).position ;
 end
 
+%% Visualization
+simulationFigure = figure(1) ;
+figure1_position = [-1700, 100] ;
+figure1_size = [(mapBoundary.xMax - mapBoundary.xMin),...
+               (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale;
+simulationFigure.Position = [figure1_position, figure1_size] ;
+daspect([1 1 1])
+grid on ;
+axis([mapBoundary.xMin, mapBoundary.xMax, mapBoundary.yMin, mapBoundary.yMax]) ;
+xlabel('x(m)') ;
+ylabel('y(m)') ;
+
+reachableVelocityFigure = figure(2) ;
+figure2_position = figure1_position + [650, 0] ;
+figure2_size = [(mapBoundary.xMax - mapBoundary.xMin),...
+               (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale;
+reachableVelocityFigure.Position = [figure2_position, figure2_size] ;
+daspect([1 1 1])
+grid on ;
+
+xlabel('x(m)') ;
+ylabel('y(m)') ;
+
 %% Simulation
 while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.xMax ...
         && mapBoundary.yMin <= agent.position(2) && agent.position(2) <= mapBoundary.yMax
     
-    %% Visualization
-    simulationFigure = figure(1) ;
-    figure_position = [-1700, 100] ;
-    figure_size = [(mapBoundary.xMax - mapBoundary.xMin),...
-                   (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale;
-    simulationFigure.Position = [figure_position, figure_size] ;
-    daspect([1 1 1])
-    grid on ;
-    axis([mapBoundary.xMin, mapBoundary.xMax, mapBoundary.yMin, mapBoundary.yMax]) ;
-    xlabel('x(m)') ;
-    ylabel('y(m)') ;
+    figure(1) ;
     
     %   Clear the axes
     cla ;
@@ -121,25 +134,26 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     text(mapBoundary.xMin + 2, mapBoundary.yMax - 12, speedString) ;
     
     %% Obstacle course change
-    if 60 <= time && time < 70
-        obstacleTurningAngle = obstacleTurningAngle + obstacleTurningRate ;
-        obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
-        obstacles.obstacle1.velocity = obstacleSpeed...
-                                        * [-sin(obstacleTurningAngle);
-                                           -cos(obstacleTurningAngle)] ;
-    elseif 90 <= time && time < 100
-        obstacleTurningAngle = obstacleTurningAngle - obstacleTurningRate ;
-        obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
-        obstacles.obstacle1.velocity = obstacleSpeed...
-                                        * [-sin(obstacleTurningAngle);
-                                           -cos(obstacleTurningAngle)] ;
-   elseif 130 <= time && time < 140
-        obstacleTurningAngle = obstacleTurningAngle + obstacleTurningRate ;
-        obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
-        obstacles.obstacle1.velocity = obstacleSpeed...
-                                        * [sin(obstacleTurningAngle);
-                                           -cos(obstacleTurningAngle)] ;
-    end
+%     if 60 <= time && time < 70
+%         obstacleTurningAngle = obstacleTurningAngle + obstacleTurningRate ;
+%         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
+%         obstacles.obstacle1.velocity = obstacleSpeed...
+%                                         * [-sin(obstacleTurningAngle);
+%                                            -cos(obstacleTurningAngle)] ;
+%     elseif 90 <= time && time < 100
+%         obstacleTurningAngle = obstacleTurningAngle - obstacleTurningRate ;
+%         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
+%         obstacles.obstacle1.velocity = obstacleSpeed...
+%                                         * [-sin(obstacleTurningAngle);
+%                                            -cos(obstacleTurningAngle)] ;
+%    elseif 130 <= time && time < 140
+%         obstacleTurningAngle = obstacleTurningAngle + obstacleTurningRate ;
+%         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
+%         obstacles.obstacle1.velocity = obstacleSpeed...
+%                                         * [sin(obstacleTurningAngle);
+%                                            -cos(obstacleTurningAngle)] ;
+%     end
+
 %     if time > 180
 %         obstacles.obstacle2.velocity = [-1.2 ;   % x(m)
 %                                         0] ; % y(m)
@@ -205,22 +219,12 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     % Judge the reachable velocities ovelapped to collision cone
     hasAllOverlap = false ;
     hasPartialOverlap = false ;
-    for obstacleIndex = 1:size(inSet, 2)
-        if all(inSet(:, obstacleIndex)) == 1
-            hasAllOverlap = true ;
-            hasPartialOverlap = false ;
-            break
-        elseif any(inSet(:, obstacleIndex)) == 1
-            hasPartialOverlap = true ;
-            hasAllOverlap = false ;
-        end
-    end
     
-%     if all(inSet) == 1      % nothing reachable velocities
-%         hasAllOverlap = true ;
-%     elseif any(inSet) == 1  % has some reachable velocities
-%         hasPartialOverlap =  true ;
-%     end
+    if all(any(inSet, 2))
+        hasAllOverlap = true ;
+    elseif any(any(inSet, 2))
+        hasPartialOverlap = true ;
+    end
     
     in = any(inSet, 2) ;
     
@@ -237,7 +241,7 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     %% Draw reachable avoidance velocities
     if willVisualizeReachableAvoidanceVocities
         plot(shiftedReachableAvoidanceVelocitiesOut(1, :),...
-            shiftedReachableAvoidanceVelocitiesOut(2, :), '.') ;
+            shiftedReachableAvoidanceVelocitiesOut(2, :), 'm.') ;
     end
   
     %% Draw agent and obstacle position
@@ -293,9 +297,9 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     [~, ChosenVelocityIndex] = min(distanceToTarget) ;
     %}
     
-    %% Velocity strategy: escape collision cone
+    %% Velocity strategy: if nowhere the agent can avoid collsion, it just stops
     if hasAllOverlap  
-        [~, minIndex] = min(shiftedReachableVelocities(1, :)) ;
+        [~, minIndex] = min(abs(sqrt(reachableVelocities(1, :).^2 + reachableVelocities(2, :).^2))) ;
         ChosenVelocityIndex = minIndex ;
         agent.velocity = reachableVelocities(:, ChosenVelocityIndex) ;
     %% Velocity strategy: comply with COLREGS
@@ -334,25 +338,79 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
                 'Color', 'r', 'LineWidth', 1) ;
         end
     end
+   
+    %% Additional figure for reachable velocity vectors
+    figure(2) ;
+    axis([agent.position(1)-3, agent.position(1)+3, agent.position(2)-3, agent.position(2)+3]) ;
     
-    %% Calculate next position
-    agent.setNextPosition() ;
-    for p = 1:numel(fieldnames(obstacles))
-        obstacles.(obstacleNames{p}).setNextPosition(dt) ;
+    cla ;
+    hold on ;
+    
+    % Draw the reference line
+    plot(targetLine(:, 1), targetLine(:, 2), 'g', 'LineWidth', 3) ;
+    
+    % Draw agent
+    plot(agent.position(1), agent.position(2), 'b.', 'MarkerSize', 10) ;
+    draw_agent(agent, willVisualizeShipDomain) ;
+    
+    % Draw obstacles
+    draw_obstacle(obstacles) ;
+    
+    % Draw velocity obstacle
+    if willVisualizeVelocityObstacle
+        for j = 1:numel(fieldnames(obstacles))
+            if isreal(velocityObstaclePoints{j})
+                fill(velocityObstaclePoints{j}(:, 1), velocityObstaclePoints{j}(:, 2), 'y') ;
+                alpha(0.1) ;
+            end
+        end
+    end
+    
+    % Draw reachable velocites
+    if willVisualizeReachableVelocities
+        k = convhull(shiftedReachableVelocities(1, :),...
+            shiftedReachableVelocities(2, :)) ;
+        patch('Faces', 1:1:length(k),...
+            'Vertices',...
+            [shiftedReachableVelocities(1, k);...
+            shiftedReachableVelocities(2, k)]',...
+            'FaceColor', 'g', 'FaceAlpha', .1) ;
+    end
+    
+    % Draw reachable avoidance velocities
+    if willVisualizeReachableAvoidanceVocities
+        plot(shiftedReachableAvoidanceVelocitiesOut(1, :),...
+            shiftedReachableAvoidanceVelocitiesOut(2, :), 'm.') ;
+    end
+    
+    % Draw the veloity vector of agent and obstacle
+    if willVisualizeVelocityVector
+        %   Velocity vector of agent
+        quiver(agent.position(1), agent.position(2),...
+            agent.velocity(1), agent.velocity(2), 0,...
+            'Color', 'b', 'LineWidth', 1) ;
     end
     
     %% Crash
     for q = 1:numel(fieldnames(obstacles))
         if pdist([agent.position(1:2)'; obstacles.(obstacleNames{q}).position(1:2)']) <= ...
                 agent.radius + obstacles.(obstacleNames{q}).radius 
-            text(mapBoundary.xMax - 70, mapBoundary.yMin + 10,...
+           figure(1) ; 
+           text(mapBoundary.xMax - 70, mapBoundary.yMin + 10,...
                 'Crashed', 'Color', 'red', 'FontSize', 20) ;
-            isCrashed = true ;
+           isCrashed = true ;
         end
     end
     if isCrashed
         break
     end
+    
     %% Udpate the rpm the ship took
     agent.update_rpm(ChosenVelocityIndex)
+    
+    %% Calculate next position
+    agent.setNextPosition() ;
+    for p = 1:numel(fieldnames(obstacles))
+        obstacles.(obstacleNames{p}).setNextPosition(dt) ;
+    end
 end

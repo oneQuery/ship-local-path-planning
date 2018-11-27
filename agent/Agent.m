@@ -4,7 +4,7 @@ classdef Agent < handle
         model
         B = 2.5     % beam(m)
         L = 4.88    % length(m)
-        radius = 4.88
+        radius = 2.44
         position
         velocity
         Rf
@@ -113,15 +113,23 @@ classdef Agent < handle
             kDT = 10 ^ (0.5441 * log10(vOwnKnot) - 0.0795) ;
             
             % With Kijima ship domain model
-%             obj.Rf = obj.L/2 + (1 + 1.34 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
-%             obj.Ra = obj.L/2 + (1 + 0.67 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
-%             obj.Rp = obj.B/2 + (0.2 + 0.75 * kDT) * obj.L ;
-%             obj.Rs = obj.B/2 + (0.2 + kDT) * obj.L ;
-            
             obj.Rf = (1 + 1.34 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
             obj.Ra = (1 + 0.67 * sqrt(kAD^2 + (kDT/2)^2)) * obj.L ;
             obj.Rp = (0.2 + 0.75 * kDT) * obj.L ;
             obj.Rs = (0.2 + kDT) * obj.L ;
+
+            if obj.Rf < obj.L/2
+                obj.Rf = obj.L/2 ;
+            end
+            if obj.Ra < obj.L/2
+                obj.Ra = obj.L/2 ;
+            end
+            if obj.Rp < obj.B/2
+                obj.Rp = obj.B/2 ;
+            end
+            if obj.Rs < obj.B/2
+                obj.Rs = obj.B/2 ;
+            end
             
             % Without any ship domain
 %             obj.Rf = 0 ;
@@ -130,6 +138,12 @@ classdef Agent < handle
 %             obj.Rs = 0 ;
         end
         
+        function emergency_ship_domain(obj)
+            obj.Rf = obj.L/2 ;
+            obj.Ra = obj.L/2 ;
+            obj.Rp = obj.B/2 ;
+            obj.Rs = obj.B/2 ;
+        end
         
     end
 end

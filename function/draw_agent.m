@@ -19,6 +19,6 @@ if willVisualizeShipDomain
     plot(RX, RY, 'b:', 'LineWidth', 1) ;
 end
 
-ellipse(agent.position(1), agent.position(2), agent.L, agent.B, atan2(agent.velocity(2), agent.velocity(1)), 'b') ;
+ellipse(agent.position(1), agent.position(2), agent.L/2, agent.B/2, atan2(agent.velocity(2), agent.velocity(1)), 'b') ;
 end
 

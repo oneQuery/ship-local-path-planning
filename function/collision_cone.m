@@ -82,7 +82,7 @@ for obstacleIndex = 1:numel(obstacleNames)
     CHat_theta = pi / 2 - tempAngle1 ;
     CHat_abs_theta1 = (losAngleEarth + pi) + CHat_theta ; 
     CHat_abs_theta2 = (losAngleEarth + pi) - CHat_theta ;
-    Chat_theta_grid = sort(linspace(CHat_abs_theta1, CHat_abs_theta2, 3), 'descend')' ;
+    Chat_theta_grid = sort(linspace(CHat_abs_theta1, CHat_abs_theta2, 10), 'descend')' ;
     
     [collisionConeTimeHorizonPoint1, collisionConetimeHorizonPoint2] = ...
         angle_to_point(CHat_center, Chat_theta_grid, (agent.Rf + agent.Ra) * CHat_scale) ;
