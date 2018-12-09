@@ -15,32 +15,54 @@ agent.model = WMAV2016() ;
 agent.position = [0 ;   % x(m)
                  0 ;    % y(m)
                  0] ;     % psi(rad)
-agent.velocity = [1.5 ;   % u(m/s)
+agent.velocity = [2 ;   % u(m/s)
                   0 ;   % v(m/s)
                   0] ;  % r(rad/s)
 % agent.radius = 5 ;    % (m)
 
 %% Initial obstacles
 obstacles.obstacle1 = Obstacle() ;
-obstacles.obstacle1.position = [200 ;     % x(m)
-                                100] ;   % y(m)
-obstacles.obstacle1.velocity = [-1 ;     % x(m)
-                                -1] ;   % y(m)
-obstacles.obstacle1.radius = 5 ;
+obstacles.obstacle1.position = [150 ;     % x(m)
+                                150] ;   % y(m)
+obstacles.obstacle1.velocity = [0 ;     % x(m)
+                                -2] ;   % y(m)
+obstacles.obstacle1.radius = 3 ;
 
-obstacles.obstacle2 = Obstacle() ;
-obstacles.obstacle2.position = [230 ;    % x(m)
-                                -30] ;   % y(m)
-obstacles.obstacle2.velocity = [-1 ;   % x(m)    
-                                0] ; % y(m)      
-obstacles.obstacle2.radius = 5 ;
+% obstacles.obstacle2 = Obstacle() ;
+% obstacles.obstacle2.position = [300 ;    % x(m)
+%                                 70] ;   % y(m)
+% obstacles.obstacle2.velocity = [-1 ;   % x(m)    
+%                                 0] ; % y(m)      
+% obstacles.obstacle2.radius = 5 ;
 
-obstacles.obstacle3 = Obstacle() ;
-obstacles.obstacle3.position = [270 ;    % x(m)
-                                -20] ;   % y(m)
-obstacles.obstacle3.velocity = [-1 ;   % x(m)    
-                                0] ; % y(m)     
-obstacles.obstacle3.radius = 5 ;
+% obstacles.obstacle3 = Obstacle() ;
+% obstacles.obstacle3.position = [300 ;    % x(m)
+%                                 50] ;   % y(m)
+% obstacles.obstacle3.velocity = [-1.1 ;   % x(m)    
+%                                 -1.1] ; % y(m)     
+% obstacles.obstacle3.radius = 5 ;
+% 
+% obstacles.obstacle4 = Obstacle() ;
+% obstacles.obstacle4.position = [100 ;     % x(m)
+%                                 -100] ;   % y(m)
+% obstacles.obstacle4.velocity = [0 ;     % x(m)
+%                                 1] ;   % y(m)
+% obstacles.obstacle4.radius = 5 ;
+% 
+% obstacles.obstacle5 = Obstacle() ;
+% obstacles.obstacle5.position = [200 ;    % x(m)
+%                                 -100] ;   % y(m)
+% obstacles.obstacle5.velocity = [0 ;   % x(m)    
+%                                 1] ; % y(m)      
+% obstacles.obstacle5.radius = 5 ;
+% 
+% obstacles.obstacle6 = Obstacle() ;
+% obstacles.obstacle6.position = [300 ;    % x(m)
+%                                 -100] ;   % y(m)
+% obstacles.obstacle6.velocity = [0 ;   % x(m)    
+%                                 1] ; % y(m)     
+% obstacles.obstacle6.radius = 5 ;
+
 
 obstacleTurningRate = 5 * (pi / 180) ;
 obstacleTurningAngle = 0 ;
@@ -341,7 +363,7 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
    
     %% Additional figure for reachable velocity vectors
     figure(2) ;
-    axis([agent.position(1)-3, agent.position(1)+3, agent.position(2)-3, agent.position(2)+3]) ;
+    axis([agent.position(1)-20, agent.position(1)+20, agent.position(2)-20, agent.position(2)+20]) ;
     
     cla ;
     hold on ;
@@ -350,7 +372,7 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     plot(targetLine(:, 1), targetLine(:, 2), 'g', 'LineWidth', 3) ;
     
     % Draw agent
-    plot(agent.position(1), agent.position(2), 'b.', 'MarkerSize', 10) ;
+    plot(agent.position(1), agent.position(2), 'b.', 'MarkerSize', 20) ;
     draw_agent(agent, willVisualizeShipDomain) ;
     
     % Draw obstacles
