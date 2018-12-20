@@ -4,10 +4,10 @@ addpath(genpath('agent'), genpath('obstacle'), genpath('ship_models'), genpath('
 
 %% Map condition
 mapBoundary.xMin = 0 ;
-mapBoundary.xMax = 300;
-mapBoundary.yMin = -150 ;
-mapBoundary.yMax = 150 ;
-figure_scale = 2 ;
+mapBoundary.xMax = 600;
+mapBoundary.yMin = -300 ;
+mapBoundary.yMax = 300 ;
+figure_scale = 1 ;
 
 %% Initial agent
 agent = Agent() ;
@@ -22,25 +22,25 @@ agent.velocity = [2 ;   % u(m/s)
 
 %% Initial obstacles
 obstacles.obstacle1 = Obstacle() ;
-obstacles.obstacle1.position = [150 ;     % x(m)
-                                150] ;   % y(m)
-obstacles.obstacle1.velocity = [0 ;     % x(m)
-                                -2] ;   % y(m)
-obstacles.obstacle1.radius = 3 ;
+obstacles.obstacle1.position = [600 ;     % x(m)
+                                0] ;   % y(m)
+obstacles.obstacle1.velocity = [-3 ;     % x(m)
+                                0] ;   % y(m)
+obstacles.obstacle1.radius = 10 ;
 
-% obstacles.obstacle2 = Obstacle() ;
-% obstacles.obstacle2.position = [300 ;    % x(m)
-%                                 70] ;   % y(m)
-% obstacles.obstacle2.velocity = [-1 ;   % x(m)    
-%                                 0] ; % y(m)      
-% obstacles.obstacle2.radius = 5 ;
+obstacles.obstacle2 = Obstacle() ;
+obstacles.obstacle2.position = [200 ;    % x(m)
+                                -900] ;   % y(m)
+obstacles.obstacle2.velocity = [0 ;   % x(m)    
+                                8.5] ; % y(m)      
+obstacles.obstacle2.radius = 12 ;
 
-% obstacles.obstacle3 = Obstacle() ;
-% obstacles.obstacle3.position = [300 ;    % x(m)
-%                                 50] ;   % y(m)
-% obstacles.obstacle3.velocity = [-1.1 ;   % x(m)    
-%                                 -1.1] ; % y(m)     
-% obstacles.obstacle3.radius = 5 ;
+obstacles.obstacle3 = Obstacle() ;
+obstacles.obstacle3.position = [300 ;    % x(m)
+                                1500] ;   % y(m)
+obstacles.obstacle3.velocity = [0 ;   % x(m)    
+                                -8.5] ; % y(m)     
+obstacles.obstacle3.radius = 12 ;
 % 
 % obstacles.obstacle4 = Obstacle() ;
 % obstacles.obstacle4.position = [100 ;     % x(m)
@@ -64,7 +64,7 @@ obstacles.obstacle1.radius = 3 ;
 % obstacles.obstacle6.radius = 5 ;
 
 
-obstacleTurningRate = 5 * (pi / 180) ;
+obstacleTurningRate = 3 * (pi / 180) ;
 obstacleTurningAngle = 0 ;
 
 obstacleNames = fieldnames(obstacles) ;
@@ -85,7 +85,7 @@ willVisualizeReachableVelocities = true ;
 willVisualizeReachableAvoidanceVocities = true ;
 willVisualizeShipDomain = true ;
 willVisualizeVelocityVector = true ;
-checkTime = 50 ;
+checkTime = 100 ;
 
 %% Initial condition for simulation
 isCrashed = false ;
@@ -115,15 +115,16 @@ xlabel('x(m)') ;
 ylabel('y(m)') ;
 
 reachableVelocityFigure = figure(2) ;
-figure2_position = figure1_position + [650, 0] ;
+
+figure2_position = figure1_position + [601, 0] ;
 figure2_size = [(mapBoundary.xMax - mapBoundary.xMin),...
                (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale;
 reachableVelocityFigure.Position = [figure2_position, figure2_size] ;
 daspect([1 1 1])
-grid on ;
 
 xlabel('x(m)') ;
 ylabel('y(m)') ;
+
 
 %% Simulation
 while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.xMax ...
@@ -148,36 +149,43 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     %   Write clock
     time = time + dt ;
     timeString = ['Time: ', num2str(time), ' s'] ;
-    text(mapBoundary.xMin + 2, mapBoundary.yMax - 4, timeString) ;
+    text(mapBoundary.xMin + 2, mapBoundary.yMax - 8*(1/figure_scale), timeString) ;
     
     %   Write speed
     speed = round(sqrt(agent.velocity(1)^2 + agent.velocity(2)^2)/dt, 3, 'significant') ;
     speedString = ['Speed: ', num2str(speed), ' m/s'] ;
-    text(mapBoundary.xMin + 2, mapBoundary.yMax - 12, speedString) ;
+    text(mapBoundary.xMin + 2, mapBoundary.yMax - 24*(1/figure_scale), speedString) ;
     
     %% Obstacle course change
-%     if 60 <= time && time < 70
+%     if 120 <= time && time < 140
 %         obstacleTurningAngle = obstacleTurningAngle + obstacleTurningRate ;
 %         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
 %         obstacles.obstacle1.velocity = obstacleSpeed...
 %                                         * [-sin(obstacleTurningAngle);
 %                                            -cos(obstacleTurningAngle)] ;
-%     elseif 90 <= time && time < 100
-%         obstacleTurningAngle = obstacleTurningAngle - obstacleTurningRate ;
-%         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
-%         obstacles.obstacle1.velocity = obstacleSpeed...
-%                                         * [-sin(obstacleTurningAngle);
-%                                            -cos(obstacleTurningAngle)] ;
-%    elseif 130 <= time && time < 140
+        % for head-on situation
+%     if 110 <= time && time < 120
 %         obstacleTurningAngle = obstacleTurningAngle + obstacleTurningRate ;
 %         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
 %         obstacles.obstacle1.velocity = obstacleSpeed...
-%                                         * [sin(obstacleTurningAngle);
-%                                            -cos(obstacleTurningAngle)] ;
+%                                         * [-cos(obstacleTurningAngle);
+%                                            -sin(obstacleTurningAngle)] ;
+% %     elseif 140 <= time && time < 160
+% %         obstacleTurningAngle = obstacleTurningAngle - obstacleTurningRate ;
+% %         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
+% %         obstacles.obstacle1.velocity = obstacleSpeed...
+% %                                         * [-sin(obstacleTurningAngle);
+% %                                            -cos(obstacleTurningAngle)] ;
+% %    elseif 130 <= time && time < 140
+% %         obstacleTurningAngle = obstacleTurningAngle + obstacleTurningRate ;
+% %         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
+% %         obstacles.obstacle1.velocity = obstacleSpeed...
+% %                                         * [sin(obstacleTurningAngle);
+% %                                            -cos(obstacleTurningAngle)] ;
 %     end
 
 %     if time > 180
-%         obstacles.obstacle2.velocity = [-1.2 ;   % x(m)
+%         obstacles.obstacle1.velocity = [-1.2 ;   % x(m)
 %                                         0] ; % y(m)
 %     end
 %     if time > 100
@@ -297,14 +305,14 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     
     for timeTextIndex = 1:length(timeStringHistory)
         plot(agentPositionHistory2(1, :), agentPositionHistory2(2, :), 'b.', 'MarkerSize', 20) ;
-        text(agentPositionHistory2(1, timeTextIndex)-5,...
-            agentPositionHistory2(2, timeTextIndex)-5,...
+        text(agentPositionHistory2(1, timeTextIndex)-10,...
+            agentPositionHistory2(2, timeTextIndex)-10,...
             timeStringHistory{timeTextIndex}) ;
         for obstacleIndex = 1:numel(obstacleNames)
             plot(obstaclePositionHistory2{obstacleIndex}(1, :),...
                 obstaclePositionHistory2{obstacleIndex}(2, :), 'r.', 'MarkerSize', 20) ;
-            text(obstaclePositionHistory2{obstacleIndex}(1, timeTextIndex)-5,...
-                obstaclePositionHistory2{obstacleIndex}(2, timeTextIndex)-5,...
+            text(obstaclePositionHistory2{obstacleIndex}(1, timeTextIndex)-10,...
+                obstaclePositionHistory2{obstacleIndex}(2, timeTextIndex)+15,...
                 timeStringHistory{timeTextIndex}) ;
         end
     end
@@ -321,7 +329,10 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     
     %% Velocity strategy: if nowhere the agent can avoid collsion, it just stops
     if hasAllOverlap  
-        [~, minIndex] = min(abs(sqrt(reachableVelocities(1, :).^2 + reachableVelocities(2, :).^2))) ;
+%         [~, minIndex] = min(abs(sqrt(reachableVelocities(1, :).^2 + reachableVelocities(2, :).^2))) ;     % stay
+%         [~, minIndex] = min(reachableVelocities(1, :)) ;       % step back
+%         [~, minIndex] = max(reachableVelocities(2, :)) ;       % go around to left
+        [~, minIndex] = min(reachableVelocities(2, :)) ;       % try its' best to comply with COLREGS
         ChosenVelocityIndex = minIndex ;
         agent.velocity = reachableVelocities(:, ChosenVelocityIndex) ;
     %% Velocity strategy: comply with COLREGS
@@ -367,6 +378,7 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     
     cla ;
     hold on ;
+    grid on ;
     
     % Draw the reference line
     plot(targetLine(:, 1), targetLine(:, 2), 'g', 'LineWidth', 3) ;
