@@ -28,20 +28,20 @@ obstacles.obstacle1.velocity = [-3 ;     % x(m)
                                 0] ;   % y(m)
 obstacles.obstacle1.radius = 10 ;
 
-obstacles.obstacle2 = Obstacle() ;
-obstacles.obstacle2.position = [200 ;    % x(m)
-                                -900] ;   % y(m)
-obstacles.obstacle2.velocity = [0 ;   % x(m)    
-                                8.5] ; % y(m)      
-obstacles.obstacle2.radius = 12 ;
-
-obstacles.obstacle3 = Obstacle() ;
-obstacles.obstacle3.position = [300 ;    % x(m)
-                                1500] ;   % y(m)
-obstacles.obstacle3.velocity = [0 ;   % x(m)    
-                                -8.5] ; % y(m)     
-obstacles.obstacle3.radius = 12 ;
+% obstacles.obstacle2 = Obstacle() ;
+% obstacles.obstacle2.position = [200 ;    % x(m)
+%                                 -900] ;   % y(m)
+% obstacles.obstacle2.velocity = [0 ;   % x(m)    
+%                                 8.5] ; % y(m)      
+% obstacles.obstacle2.radius = 12 ;
 % 
+% obstacles.obstacle3 = Obstacle() ;
+% obstacles.obstacle3.position = [300 ;    % x(m)
+%                                 1500] ;   % y(m)
+% obstacles.obstacle3.velocity = [0 ;   % x(m)    
+%                                 -8.5] ; % y(m)     
+% obstacles.obstacle3.radius = 12 ;
+% % 
 % obstacles.obstacle4 = Obstacle() ;
 % obstacles.obstacle4.position = [100 ;     % x(m)
 %                                 -100] ;   % y(m)
@@ -80,12 +80,16 @@ targetLine = [targetLineX, targetLineY] ;
 % targetPoint = [0, 30] ;
 
 %% Visualization setting
-willVisualizeVelocityObstacle = true ;
-willVisualizeReachableVelocities = true ;
-willVisualizeReachableAvoidanceVocities = true ;
-willVisualizeShipDomain = true ;
-willVisualizeVelocityVector = true ;
-checkTime = 100 ;
+willVisualizeVelocityObstacle = false ;
+willVisualizeReachableVelocities = false ;
+willVisualizeReachableAvoidanceVocities = false ;
+willVisualizeShipDomain = false ;
+willVisualizeVelocityVector = false ;
+
+willWriteClock = false ;
+willWriteSpeed = false ;
+
+checkTime = 50 ;
 
 %% Initial condition for simulation
 isCrashed = false ;
@@ -93,6 +97,8 @@ isCrashed = false ;
 time = 0 ;
 global dt
 dt = 1 ;
+timeHistory = [] ;
+speedHistory = [] ;
 timeStringHistory = {'0 s'} ;
 
 agentPositionHistory1 = agent.position ;
@@ -108,18 +114,19 @@ figure1_position = [-1700, 100] ;
 figure1_size = [(mapBoundary.xMax - mapBoundary.xMin),...
                (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale;
 simulationFigure.Position = [figure1_position, figure1_size] ;
+set(gca, 'FontSize', 9) ;
 daspect([1 1 1])
 grid on ;
 axis([mapBoundary.xMin, mapBoundary.xMax, mapBoundary.yMin, mapBoundary.yMax]) ;
 xlabel('x(m)') ;
 ylabel('y(m)') ;
 
-reachableVelocityFigure = figure(2) ;
+zoomInFigure = figure(2) ;
 
 figure2_position = figure1_position + [601, 0] ;
 figure2_size = [(mapBoundary.xMax - mapBoundary.xMin),...
                (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale;
-reachableVelocityFigure.Position = [figure2_position, figure2_size] ;
+zoomInFigure.Position = [figure2_position, figure2_size] ;
 daspect([1 1 1])
 
 xlabel('x(m)') ;
@@ -148,13 +155,19 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     
     %   Write clock
     time = time + dt ;
-    timeString = ['Time: ', num2str(time), ' s'] ;
-    text(mapBoundary.xMin + 2, mapBoundary.yMax - 8*(1/figure_scale), timeString) ;
+    if willWriteClock
+        timeString = ['Time: ', num2str(time), ' s'] ;
+        text(mapBoundary.xMin + 2, mapBoundary.yMax - 8*(1/figure_scale), timeString) ;
+    end
+    timeHistory(end + 1) = time ;    
     
     %   Write speed
     speed = round(sqrt(agent.velocity(1)^2 + agent.velocity(2)^2)/dt, 3, 'significant') ;
-    speedString = ['Speed: ', num2str(speed), ' m/s'] ;
-    text(mapBoundary.xMin + 2, mapBoundary.yMax - 24*(1/figure_scale), speedString) ;
+    if willWriteSpeed
+        speedString = ['Speed: ', num2str(speed), ' m/s'] ;
+        text(mapBoundary.xMin + 2, mapBoundary.yMax - 24*(1/figure_scale), speedString) ;
+    end
+    speedHistory(end + 1) = speed ;
     
     %% Obstacle course change
 %     if 120 <= time && time < 140
@@ -286,11 +299,11 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
                 obstacles.(obstacleNames{obstacleIndex}).position ;
         end
     end
+    agentTrajectoryPlot = plot(agentPositionHistory1(1, :), agentPositionHistory1(2, :), '-b', 'LineWidth', 2) ;
     
-    plot(agentPositionHistory1(1, :), agentPositionHistory1(2, :), '.b') ;
     for obstacleIndex = 1:numel(obstacleNames)
-        plot(obstaclePositionHistory1{obstacleIndex}(1, :),...
-            obstaclePositionHistory1{obstacleIndex}(2, :), '--r') ;
+        obstacleTrajectoryPlot = plot(obstaclePositionHistory1{obstacleIndex}(1, :),...
+                                obstaclePositionHistory1{obstacleIndex}(2, :), '--r', 'LineWidth', 2) ;
     end
     
     %   Draw time at corresponding position of agent and obstacles
@@ -307,13 +320,15 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
         plot(agentPositionHistory2(1, :), agentPositionHistory2(2, :), 'b.', 'MarkerSize', 20) ;
         text(agentPositionHistory2(1, timeTextIndex)-10,...
             agentPositionHistory2(2, timeTextIndex)-10,...
-            timeStringHistory{timeTextIndex}) ;
+            timeStringHistory{timeTextIndex},...
+            'FontSize', 9) ;
         for obstacleIndex = 1:numel(obstacleNames)
             plot(obstaclePositionHistory2{obstacleIndex}(1, :),...
-                obstaclePositionHistory2{obstacleIndex}(2, :), 'r.', 'MarkerSize', 20) ;
+                obstaclePositionHistory2{obstacleIndex}(2, :), 'ro', 'MarkerSize', 5) ;
             text(obstaclePositionHistory2{obstacleIndex}(1, timeTextIndex)-10,...
                 obstaclePositionHistory2{obstacleIndex}(2, timeTextIndex)+15,...
-                timeStringHistory{timeTextIndex}) ;
+                timeStringHistory{timeTextIndex},...
+                'FontSize', 9) ;
         end
     end
         
@@ -447,4 +462,20 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     for p = 1:numel(fieldnames(obstacles))
         obstacles.(obstacleNames{p}).setNextPosition(dt) ;
     end
+    
 end
+
+%% Plot the speed in time series
+speedHistoryFigure = figure(3) ;
+plot(timeHistory, speedHistory) ;
+grid on ;
+set(gca, 'plotboxAspectRatio', [4 1 1],...
+         'Xlim', [min(timeHistory) max(timeHistory)],...
+         'YLim', [0 3],...
+         'FontSize', 9) ;
+xlabel('Time (sec)') ;
+ylabel('Speed (m/s)') ;
+
+%% Save the result
+saveas(simulationFigure, 'trajectoryResult.png') ;
+saveas(speedHistoryFigure, 'speedResult.png') ;
