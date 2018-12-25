@@ -7,7 +7,7 @@ mapBoundary.xMin = 0 ;
 mapBoundary.xMax = 600;
 mapBoundary.yMin = -300 ;
 mapBoundary.yMax = 300 ;
-figure_scale = 1 ;
+figure_scale = 2/3 ;
 
 %% Initial agent
 agent = Agent() ;
@@ -28,12 +28,12 @@ obstacles.obstacle1.velocity = [-3 ;     % x(m)
                                 0] ;   % y(m)
 obstacles.obstacle1.radius = 10 ;
 
-% obstacles.obstacle2 = Obstacle() ;
-% obstacles.obstacle2.position = [200 ;    % x(m)
-%                                 -900] ;   % y(m)
-% obstacles.obstacle2.velocity = [0 ;   % x(m)    
-%                                 8.5] ; % y(m)      
-% obstacles.obstacle2.radius = 12 ;
+obstacles.obstacle2 = Obstacle() ;
+obstacles.obstacle2.position = [200 ;    % x(m)
+                                -900] ;   % y(m)
+obstacles.obstacle2.velocity = [0 ;   % x(m)    
+                                8.5] ; % y(m)      
+obstacles.obstacle2.radius = 12 ;
 % 
 % obstacles.obstacle3 = Obstacle() ;
 % obstacles.obstacle3.position = [300 ;    % x(m)
@@ -99,6 +99,7 @@ global dt
 dt = 1 ;
 timeHistory = [] ;
 speedHistory = [] ;
+relativeDistanceHistory = [] ;
 timeStringHistory = {'0 s'} ;
 
 agentPositionHistory1 = agent.position ;
@@ -109,28 +110,43 @@ for obstacleIndex = 1:numel(obstacleNames)
 end
 
 %% Visualization
+fontSize = 7 ;
+% Figure for simlulation
 simulationFigure = figure(1) ;
 figure1_position = [-1700, 100] ;
 figure1_size = [(mapBoundary.xMax - mapBoundary.xMin),...
-               (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale;
+               (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale ;
 simulationFigure.Position = [figure1_position, figure1_size] ;
-set(gca, 'FontSize', 9) ;
+set(gca, 'FontSize', fontSize) ;
 daspect([1 1 1])
 grid on ;
 axis([mapBoundary.xMin, mapBoundary.xMax, mapBoundary.yMin, mapBoundary.yMax]) ;
 xlabel('x(m)') ;
 ylabel('y(m)') ;
 
+% Figure for zoom in
 zoomInFigure = figure(2) ;
-
-figure2_position = figure1_position + [601, 0] ;
+figure2_position = figure1_position + [round(mapBoundary.xMax * figure_scale) + 1, 0] ;
 figure2_size = [(mapBoundary.xMax - mapBoundary.xMin),...
-               (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale;
+               (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale ;
 zoomInFigure.Position = [figure2_position, figure2_size] ;
 daspect([1 1 1])
-
 xlabel('x(m)') ;
 ylabel('y(m)') ;
+
+% Figure for plotting speed
+speedHistoryFigure = figure(3) ;
+figure3_position = figure2_position + [round(mapBoundary.xMax * figure_scale) + 1, 0] ;
+figure3_size = [(mapBoundary.xMax - mapBoundary.xMin),...
+               (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale;
+speedHistoryFigure.Position = [figure3_position, figure3_size] ;
+
+% Figure for plotting relative distance
+relativeDistanceHistoryFigure = figure(4) ;
+figure4_position = figure3_position + [round(mapBoundary.xMax * figure_scale) + 1, 0] ;
+figure4_size = [(mapBoundary.xMax - mapBoundary.xMin),...
+               (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale;
+relativeDistanceHistoryFigure.Position = [figure4_position, figure4_size] ;
 
 
 %% Simulation
@@ -153,7 +169,8 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     plot(targetPoint(1), targetPoint(2), 'v') ;
     %}
     
-    %   Write clock
+    %% Record
+    % Write clock
     time = time + dt ;
     if willWriteClock
         timeString = ['Time: ', num2str(time), ' s'] ;
@@ -161,13 +178,22 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     end
     timeHistory(end + 1) = time ;    
     
-    %   Write speed
+    % Write speed
     speed = round(sqrt(agent.velocity(1)^2 + agent.velocity(2)^2)/dt, 3, 'significant') ;
     if willWriteSpeed
         speedString = ['Speed: ', num2str(speed), ' m/s'] ;
         text(mapBoundary.xMin + 2, mapBoundary.yMax - 24*(1/figure_scale), speedString) ;
     end
     speedHistory(end + 1) = speed ;
+    
+    % Relative distance
+    for obstacleIndex = 1:numel(fieldnames(obstacles))
+        relativeDistance(obstacleIndex) =...
+            pdist([agent.position(1:2)'; 
+                   obstacles.(obstacleNames{obstacleIndex}).position(1:2)']) ;
+    end
+    relativeDistanceHistory(end + 1, :) = relativeDistance ;
+
     
     %% Obstacle course change
 %     if 120 <= time && time < 140
@@ -299,11 +325,11 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
                 obstacles.(obstacleNames{obstacleIndex}).position ;
         end
     end
-    agentTrajectoryPlot = plot(agentPositionHistory1(1, :), agentPositionHistory1(2, :), '-b', 'LineWidth', 2) ;
+    agentTrajectoryPlot = plot(agentPositionHistory1(1, :), agentPositionHistory1(2, :), '-b', 'LineWidth', 1) ;
     
     for obstacleIndex = 1:numel(obstacleNames)
         obstacleTrajectoryPlot = plot(obstaclePositionHistory1{obstacleIndex}(1, :),...
-                                obstaclePositionHistory1{obstacleIndex}(2, :), '--r', 'LineWidth', 2) ;
+                                obstaclePositionHistory1{obstacleIndex}(2, :), '--r', 'LineWidth', 1) ;
     end
     
     %   Draw time at corresponding position of agent and obstacles
@@ -321,14 +347,14 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
         text(agentPositionHistory2(1, timeTextIndex)-10,...
             agentPositionHistory2(2, timeTextIndex)-10,...
             timeStringHistory{timeTextIndex},...
-            'FontSize', 9) ;
+            'FontSize', fontSize) ;
         for obstacleIndex = 1:numel(obstacleNames)
             plot(obstaclePositionHistory2{obstacleIndex}(1, :),...
                 obstaclePositionHistory2{obstacleIndex}(2, :), 'ro', 'MarkerSize', 5) ;
             text(obstaclePositionHistory2{obstacleIndex}(1, timeTextIndex)-10,...
                 obstaclePositionHistory2{obstacleIndex}(2, timeTextIndex)+15,...
                 timeStringHistory{timeTextIndex},...
-                'FontSize', 9) ;
+                'FontSize', fontSize) ;
         end
     end
         
@@ -465,17 +491,36 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     
 end
 
-%% Plot the speed in time series
-speedHistoryFigure = figure(3) ;
-plot(timeHistory, speedHistory) ;
-grid on ;
-set(gca, 'plotboxAspectRatio', [4 1 1],...
-         'Xlim', [min(timeHistory) max(timeHistory)],...
-         'YLim', [0 3],...
-         'FontSize', 9) ;
-xlabel('Time (sec)') ;
-ylabel('Speed (m/s)') ;
-
 %% Save the result
 saveas(simulationFigure, 'trajectoryResult.png') ;
+
+figure(3) ;
+plot(timeHistory, speedHistory, 'LineWidth', 1) ;
+set(gca, 'Xlim', [min(timeHistory) max(timeHistory)],...
+         'YLim', [0 3],...
+         'FontSize', fontSize) ;
+grid on ;
+pbaspect([4 1 1])
+xlabel('Time (sec)') ;
+ylabel('Speed (m/s)') 
 saveas(speedHistoryFigure, 'speedResult.png') ;
+
+figure(4) ;
+lineStyle = {'-', '--', '-.'} ;
+for obstacleIndex = 1:numel(fieldnames(obstacles))
+    hold on ;
+    
+    plot(timeHistory, relativeDistanceHistory(:, obstacleIndex), lineStyle{obstacleIndex}, 'LineWidth', 1) ;
+%     legendName{obstacleIndex} = sprintf('TS%d', obstacleIndex) ;
+            
+end
+hold off ;
+set(gca, 'Xlim', [min(timeHistory) max(timeHistory)],...
+         'YLim', [0 600],...
+         'FontSize', fontSize) ;
+grid on ;
+% legend(legendName) ;
+pbaspect([4 1 1])
+xlabel('Time (sec)') ;
+ylabel('Relative distance (m)') 
+saveas(relativeDistanceHistoryFigure, 'relativeDistanceResult.png') ;
