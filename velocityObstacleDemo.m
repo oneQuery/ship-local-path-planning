@@ -1,5 +1,5 @@
 %% Clear
-clc; clear; close all ;
+clc; clear all; close all ;
 addpath(genpath('agent'), genpath('obstacle'), genpath('ship_models'), genpath('function')) ;
 
 %% Map condition
@@ -22,18 +22,18 @@ agent.velocity = [2 ;   % u(m/s)
 
 %% Initial obstacles
 obstacles.obstacle1 = Obstacle() ;
-obstacles.obstacle1.position = [600 ;     % x(m)
-                                0] ;   % y(m)
-obstacles.obstacle1.velocity = [-3 ;     % x(m)
-                                0] ;   % y(m)
+obstacles.obstacle1.position = [150 ;     % x(m)
+                                -300] ;   % y(m)
+obstacles.obstacle1.velocity = [0 ;     % x(m)
+                                3] ;   % y(m)
 obstacles.obstacle1.radius = 10 ;
 
-obstacles.obstacle2 = Obstacle() ;
-obstacles.obstacle2.position = [200 ;    % x(m)
-                                -900] ;   % y(m)
-obstacles.obstacle2.velocity = [0 ;   % x(m)    
-                                8.5] ; % y(m)      
-obstacles.obstacle2.radius = 12 ;
+% obstacles.obstacle2 = Obstacle() ;
+% obstacles.obstacle2.position = [200 ;    % x(m)
+%                                 -900] ;   % y(m)
+% obstacles.obstacle2.velocity = [0 ;   % x(m)    
+%                                 8.5] ; % y(m)      
+% obstacles.obstacle2.radius = 12 ;
 % 
 % obstacles.obstacle3 = Obstacle() ;
 % obstacles.obstacle3.position = [300 ;    % x(m)
@@ -97,10 +97,12 @@ isCrashed = false ;
 time = 0 ;
 global dt
 dt = 1 ;
+
 timeHistory = [] ;
+timeStringHistory = {'0 sec'} ;
 speedHistory = [] ;
 relativeDistanceHistory = [] ;
-timeStringHistory = {'0 s'} ;
+courseAngleHistory = [] ;
 
 agentPositionHistory1 = agent.position ;
 agentPositionHistory2 = agent.position ;
@@ -111,6 +113,7 @@ end
 
 %% Visualization
 fontSize = 7 ;
+
 % Figure for simlulation
 simulationFigure = figure(1) ;
 figure1_position = [-1700, 100] ;
@@ -123,6 +126,7 @@ grid on ;
 axis([mapBoundary.xMin, mapBoundary.xMax, mapBoundary.yMin, mapBoundary.yMax]) ;
 xlabel('x(m)') ;
 ylabel('y(m)') ;
+box on ;
 
 % Figure for zoom in
 zoomInFigure = figure(2) ;
@@ -133,6 +137,7 @@ zoomInFigure.Position = [figure2_position, figure2_size] ;
 daspect([1 1 1])
 xlabel('x(m)') ;
 ylabel('y(m)') ;
+box on ;
 
 % Figure for plotting speed
 speedHistoryFigure = figure(3) ;
@@ -140,6 +145,7 @@ figure3_position = figure2_position + [round(mapBoundary.xMax * figure_scale) + 
 figure3_size = [(mapBoundary.xMax - mapBoundary.xMin),...
                (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale;
 speedHistoryFigure.Position = [figure3_position, figure3_size] ;
+box on ;
 
 % Figure for plotting relative distance
 relativeDistanceHistoryFigure = figure(4) ;
@@ -147,8 +153,17 @@ figure4_position = figure3_position + [round(mapBoundary.xMax * figure_scale) + 
 figure4_size = [(mapBoundary.xMax - mapBoundary.xMin),...
                (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale;
 relativeDistanceHistoryFigure.Position = [figure4_position, figure4_size] ;
+box on ;
 
-
+% Figure for plotting course angle
+courseAngleHistoryFigure = figure(5) ;
+figure5_position = figure4_position + [round(mapBoundary.xMax * figure_scale) + 1, 0] ;
+figure5_size = [(mapBoundary.xMax - mapBoundary.xMin),...
+               (mapBoundary.yMax - mapBoundary.yMin)] * figure_scale;
+courseAngleHistoryFigure.Position = [figure5_position, figure5_size] ;
+box on ;
+           
+           
 %% Simulation
 while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.xMax ...
         && mapBoundary.yMin <= agent.position(2) && agent.position(2) <= mapBoundary.yMax
@@ -156,13 +171,16 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     figure(1) ;
     
     %   Clear the axes
-    cla ;
-    hold on ;
-    if time == 0
-        disp('Press enter to start') ;
-        pause() ;
-    end
+    cla(simulationFigure) ;
     
+%     figure(1) ;
+    hold on ;
+%     if time == 0
+%         disp('Press enter to start') ;
+%         pause() ;
+%     end
+    
+%     figure(1) ;
     %   Draw the reference line
     plot(targetLine(:, 1), targetLine(:, 2), 'g', 'LineWidth', 3) ;
     %{
@@ -194,15 +212,27 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     end
     relativeDistanceHistory(end + 1, :) = relativeDistance ;
 
+    % Course angle
+    courseAngleHistory(end + 1) = agent.position(3) ;
     
     %% Obstacle course change
-%     if 120 <= time && time < 140
+    % [obstacle moving case 1] for crossing situation with target ship from port 
+%     if 50 <= time && time < 70
 %         obstacleTurningAngle = obstacleTurningAngle + obstacleTurningRate ;
 %         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
 %         obstacles.obstacle1.velocity = obstacleSpeed...
 %                                         * [-sin(obstacleTurningAngle);
 %                                            -cos(obstacleTurningAngle)] ;
-        % for head-on situation
+%     elseif 80 <= time && time < 100
+%         obstacleTurningAngle = obstacleTurningAngle - obstacleTurningRate ;
+%         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
+%         obstacles.obstacle1.velocity = obstacleSpeed...
+%                                         * [-sin(obstacleTurningAngle);
+%                                            -cos(obstacleTurningAngle)] ;
+%         
+%     end
+    
+    % for head-on situation
 %     if 110 <= time && time < 120
 %         obstacleTurningAngle = obstacleTurningAngle + obstacleTurningRate ;
 %         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
@@ -492,10 +522,14 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
 end
 
 %% Save the result
+windowForSmooth = 30 ;
+
+% Trajectory
 saveas(simulationFigure, 'trajectoryResult.png') ;
 
+% Speed
 figure(3) ;
-plot(timeHistory, speedHistory, 'LineWidth', 1) ;
+plot(timeHistory, smoothdata(speedHistory, 'gaussian', windowForSmooth), 'LineWidth', 1) ;
 set(gca, 'Xlim', [min(timeHistory) max(timeHistory)],...
          'YLim', [0 3],...
          'FontSize', fontSize) ;
@@ -505,18 +539,19 @@ xlabel('Time (sec)') ;
 ylabel('Speed (m/s)') 
 saveas(speedHistoryFigure, 'speedResult.png') ;
 
+% Relative distance
 figure(4) ;
 lineStyle = {'-', '--', '-.'} ;
 for obstacleIndex = 1:numel(fieldnames(obstacles))
     hold on ;
     
-    plot(timeHistory, relativeDistanceHistory(:, obstacleIndex), lineStyle{obstacleIndex}, 'LineWidth', 1) ;
+    plot(timeHistory, smoothdata(relativeDistanceHistory(:, obstacleIndex), 'gaussian', windowForSmooth), lineStyle{obstacleIndex}, 'LineWidth', 1) ;
 %     legendName{obstacleIndex} = sprintf('TS%d', obstacleIndex) ;
             
 end
 hold off ;
 set(gca, 'Xlim', [min(timeHistory) max(timeHistory)],...
-         'YLim', [0 600],...
+         'YLim', [0 100],...
          'FontSize', fontSize) ;
 grid on ;
 % legend(legendName) ;
@@ -524,3 +559,17 @@ pbaspect([4 1 1])
 xlabel('Time (sec)') ;
 ylabel('Relative distance (m)') 
 saveas(relativeDistanceHistoryFigure, 'relativeDistanceResult.png') ;
+
+% Course angle
+figure(5) ;
+yLimit = max([abs(min(smoothdata(courseAngleHistory*180/pi, 'gaussian', windowForSmooth))), abs(max(smoothdata(courseAngleHistory*180/pi, 'gaussian', windowForSmooth)))]) ;
+plot(timeHistory, smoothdata(courseAngleHistory*180/pi, 'gaussian', windowForSmooth), 'LineWidth', 1) ;
+set(gca, 'Xlim', [min(timeHistory) max(timeHistory)],...
+         'YLim', [-yLimit*1.2 yLimit*1.2],... 
+         'FontSize', fontSize) ;
+
+grid on ;
+pbaspect([4 1 1])
+xlabel('Time (sec)') ;
+ylabel('Course angle (deg)') 
+saveas(courseAngleHistoryFigure, 'courseAngle.png') ;

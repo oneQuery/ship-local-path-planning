@@ -92,10 +92,11 @@ classdef Agent < handle
         
         function setNextPosition(obj)
             global dt
-            move = obj.velocity(1:2) * dt ;
-            newPosition = obj.position(1:2) + move ;
+            move = obj.velocity * dt ;
+            newPosition = obj.position + move ;
             obj.position(1) = newPosition(1) ;
             obj.position(2) = newPosition(2) ;
+            obj.position(3) = atan2(obj.velocity(2), obj.velocity(1)) ;
         end
         
         function update_rpm(obj, idx)
