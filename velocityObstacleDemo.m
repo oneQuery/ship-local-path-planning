@@ -93,6 +93,7 @@ checkTime = 50 ;
 
 %% Initial condition for simulation
 isCrashed = false ;
+firstTurningRecorded = false ;
 
 time = 0 ;
 global dt
@@ -214,6 +215,13 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
 
     % Course angle
     courseAngleHistory(end + 1) = agent.position(3) ;
+    
+    % Values at turning start time
+    if firstTurningRecorded == false && (agent.position(3) < -5*pi/180 || agent.position(3) > 5*pi/180)
+        fprintf('Turning start time: %4.2f sec\n', time) ;
+        fprintf('Relative distance at turning start time: %4.2f m\n', relativeDistance) ;
+        firstTurningRecorded = true ;
+    end
     
     %% Obstacle course change
     % [obstacle moving case 1] for crossing situation with target ship from port 
@@ -519,6 +527,9 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
         obstacles.(obstacleNames{p}).setNextPosition(dt) ;
     end
     
+    
+
+    
 end
 
 %% Save the result
@@ -545,13 +556,15 @@ lineStyle = {'-', '--', '-.'} ;
 for obstacleIndex = 1:numel(fieldnames(obstacles))
     hold on ;
     
-    plot(timeHistory, smoothdata(relativeDistanceHistory(:, obstacleIndex), 'gaussian', windowForSmooth), lineStyle{obstacleIndex}, 'LineWidth', 1) ;
-%     legendName{obstacleIndex} = sprintf('TS%d', obstacleIndex) ;
-            
+    plot(timeHistory,...
+         smoothdata(relativeDistanceHistory(:, obstacleIndex), 'gaussian', windowForSmooth),...
+         lineStyle{obstacleIndex},...
+         'LineWidth', 1) ;
+    fprintf('Minimum relatvie distance: %4.2f m\n', min(smoothdata(relativeDistanceHistory(:, obstacleIndex), 'gaussian', windowForSmooth))) ;
 end
 hold off ;
 set(gca, 'Xlim', [min(timeHistory) max(timeHistory)],...
-         'YLim', [0 100],...
+         'YLim', [0 600],...
          'FontSize', fontSize) ;
 grid on ;
 % legend(legendName) ;
@@ -562,12 +575,14 @@ saveas(relativeDistanceHistoryFigure, 'relativeDistanceResult.png') ;
 
 % Course angle
 figure(5) ;
-yLimit = max([abs(min(smoothdata(courseAngleHistory*180/pi, 'gaussian', windowForSmooth))), abs(max(smoothdata(courseAngleHistory*180/pi, 'gaussian', windowForSmooth)))]) ;
-plot(timeHistory, smoothdata(courseAngleHistory*180/pi, 'gaussian', windowForSmooth), 'LineWidth', 1) ;
+yLimit = max([abs(min(smoothdata(courseAngleHistory*180/pi, 'gaussian', windowForSmooth))),...
+              abs(max(smoothdata(courseAngleHistory*180/pi, 'gaussian', windowForSmooth)))]) ;
+plot(timeHistory,...
+     smoothdata(courseAngleHistory*180/pi, 'gaussian', windowForSmooth),...
+     'LineWidth', 1) ;
 set(gca, 'Xlim', [min(timeHistory) max(timeHistory)],...
          'YLim', [-yLimit*1.2 yLimit*1.2],... 
          'FontSize', fontSize) ;
-
 grid on ;
 pbaspect([4 1 1])
 xlabel('Time (sec)') ;
