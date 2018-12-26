@@ -23,9 +23,9 @@ agent.velocity = [2 ;   % u(m/s)
 %% Initial obstacles
 obstacles.obstacle1 = Obstacle() ;
 obstacles.obstacle1.position = [150 ;     % x(m)
-                                -300] ;   % y(m)
+                                300] ;   % y(m)
 obstacles.obstacle1.velocity = [0 ;     % x(m)
-                                3] ;   % y(m)
+                                -3] ;   % y(m)
 obstacles.obstacle1.radius = 10 ;
 
 % obstacles.obstacle2 = Obstacle() ;
@@ -209,7 +209,8 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     for obstacleIndex = 1:numel(fieldnames(obstacles))
         relativeDistance(obstacleIndex) =...
             pdist([agent.position(1:2)'; 
-                   obstacles.(obstacleNames{obstacleIndex}).position(1:2)']) ;
+                   obstacles.(obstacleNames{obstacleIndex}).position(1:2)'])...
+                   - agent.L - obstacles.(obstacleNames{obstacleIndex}).radius;
     end
     relativeDistanceHistory(end + 1, :) = relativeDistance ;
 
@@ -237,28 +238,29 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
 %         obstacles.obstacle1.velocity = obstacleSpeed...
 %                                         * [-sin(obstacleTurningAngle);
 %                                            -cos(obstacleTurningAngle)] ;
-%         
 %     end
     
-    % for head-on situation
-%     if 110 <= time && time < 120
+    % [obstacle moving case 2] for head-on situation with arbitrary target ship
+%     if 115 <= time && time < 125
 %         obstacleTurningAngle = obstacleTurningAngle + obstacleTurningRate ;
 %         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
 %         obstacles.obstacle1.velocity = obstacleSpeed...
 %                                         * [-cos(obstacleTurningAngle);
 %                                            -sin(obstacleTurningAngle)] ;
-% %     elseif 140 <= time && time < 160
-% %         obstacleTurningAngle = obstacleTurningAngle - obstacleTurningRate ;
-% %         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
-% %         obstacles.obstacle1.velocity = obstacleSpeed...
-% %                                         * [-sin(obstacleTurningAngle);
-% %                                            -cos(obstacleTurningAngle)] ;
-% %    elseif 130 <= time && time < 140
-% %         obstacleTurningAngle = obstacleTurningAngle + obstacleTurningRate ;
-% %         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
-% %         obstacles.obstacle1.velocity = obstacleSpeed...
-% %                                         * [sin(obstacleTurningAngle);
-% %                                            -cos(obstacleTurningAngle)] ;
+%     end
+    
+%     elseif 140 <= time && time < 160
+%         obstacleTurningAngle = obstacleTurningAngle - obstacleTurningRate ;
+%         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
+%         obstacles.obstacle1.velocity = obstacleSpeed...
+%                                         * [-sin(obstacleTurningAngle);
+%                                            -cos(obstacleTurningAngle)] ;
+%    elseif 130 <= time && time < 140
+%         obstacleTurningAngle = obstacleTurningAngle + obstacleTurningRate ;
+%         obstacleSpeed = sqrt(obstacles.obstacle1.velocity(1)^2 + obstacles.obstacle1.velocity(2)^2) ;
+%         obstacles.obstacle1.velocity = obstacleSpeed...
+%                                         * [sin(obstacleTurningAngle);
+%                                            -cos(obstacleTurningAngle)] ;
 %     end
 
 %     if time > 180
@@ -409,9 +411,9 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     %% Velocity strategy: if nowhere the agent can avoid collsion, it just stops
     if hasAllOverlap  
 %         [~, minIndex] = min(abs(sqrt(reachableVelocities(1, :).^2 + reachableVelocities(2, :).^2))) ;     % stay
-%         [~, minIndex] = min(reachableVelocities(1, :)) ;       % step back
+        [~, minIndex] = min(reachableVelocities(1, :)) ;       % step back
 %         [~, minIndex] = max(reachableVelocities(2, :)) ;       % go around to left
-        [~, minIndex] = min(reachableVelocities(2, :)) ;       % try its' best to comply with COLREGS
+%         [~, minIndex] = min(reachableVelocities(2, :)) ;       % try its' best to comply with COLREGS
         ChosenVelocityIndex = minIndex ;
         agent.velocity = reachableVelocities(:, ChosenVelocityIndex) ;
     %% Velocity strategy: comply with COLREGS
@@ -508,9 +510,9 @@ while mapBoundary.xMin <= agent.position(1) && agent.position(1) <= mapBoundary.
     for q = 1:numel(fieldnames(obstacles))
         if pdist([agent.position(1:2)'; obstacles.(obstacleNames{q}).position(1:2)']) <= ...
                 agent.radius + obstacles.(obstacleNames{q}).radius 
-           figure(1) ; 
-           text(mapBoundary.xMax - 70, mapBoundary.yMin + 10,...
-                'Crashed', 'Color', 'red', 'FontSize', 20) ;
+%            figure(1) ; 
+%            text(mapBoundary.xMax - 70, mapBoundary.yMin + 10,...
+%                 'Crashed', 'Color', 'red', 'FontSize', 20) ;
            isCrashed = true ;
         end
     end
@@ -534,6 +536,7 @@ end
 
 %% Save the result
 windowForSmooth = 30 ;
+graphRatio = [4 0.4 0.4] ;
 
 % Trajectory
 saveas(simulationFigure, 'trajectoryResult.png') ;
@@ -545,7 +548,7 @@ set(gca, 'Xlim', [min(timeHistory) max(timeHistory)],...
          'YLim', [0 3],...
          'FontSize', fontSize) ;
 grid on ;
-pbaspect([4 1 1])
+pbaspect(graphRatio)
 xlabel('Time (sec)') ;
 ylabel('Speed (m/s)') 
 saveas(speedHistoryFigure, 'speedResult.png') ;
@@ -567,8 +570,7 @@ set(gca, 'Xlim', [min(timeHistory) max(timeHistory)],...
          'YLim', [0 600],...
          'FontSize', fontSize) ;
 grid on ;
-% legend(legendName) ;
-pbaspect([4 1 1])
+pbaspect(graphRatio)
 xlabel('Time (sec)') ;
 ylabel('Relative distance (m)') 
 saveas(relativeDistanceHistoryFigure, 'relativeDistanceResult.png') ;
@@ -584,7 +586,7 @@ set(gca, 'Xlim', [min(timeHistory) max(timeHistory)],...
          'YLim', [-yLimit*1.2 yLimit*1.2],... 
          'FontSize', fontSize) ;
 grid on ;
-pbaspect([4 1 1])
+pbaspect(graphRatio)
 xlabel('Time (sec)') ;
 ylabel('Course angle (deg)') 
 saveas(courseAngleHistoryFigure, 'courseAngle.png') ;
