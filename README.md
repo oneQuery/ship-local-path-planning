@@ -1,20 +1,16 @@
-# Ship local path planning using Velocity Obstacle considering ship safety zone.
-(Last updated on 7/20/2021)
+# Demo
+![ezgif com-gif-maker](https://user-images.githubusercontent.com/24229051/172056748-b35d3602-8a0a-4975-b665-816456b3db9a.gif)
 
------------------------------------------------
+More videos here! >> [[Videos](https://www.youtube.com/watch?v=UFRGuUviqhE&list=PLYNMvZ8JbO9YnUwum6Ky8nyXgP2XNNy-a)]
 
 # Project Description
-This is the code written in `MATLAB`, implementing the ship local path planning considering ship safety zone using the Velocity Obstacle.
+Ship local path planning (a.k.a. collision avoidance) using the Velocity Obstacle with ship safety zone. 
+This was my Master's thesis topic. See the paper if you want. The link here >> [[PDF](http://inha.dcollection.net/public_resource/pdf/200000261477_20220606000607.pdf)]
 
-# Algorithm Demonstration
-- [Video](https://www.youtube.com/watch?v=jqptI6XHtwA&list=PLYNMvZ8JbO9YnUwum6Ky8nyXgP2XNNy-a&index=5&t=0s)
+# How to run
+Run the demo m-file:
+```
+>> velocityObstacleDemo
+```
 
-# Note - Paper Writing
-The paper writing is in progress to be submitted to `Ocean Engineering`. 
-
-## 7/20/2021
-- `Latex` template for the `Ocean Engineering` has been downloaded. The final formatting is going to be processed by the online submission system, so the compiled document doesn't appear as a `Ocean Engineering` article format.
-
-## Plan
-- Type the basic information such as title, author, etc.
-- Reformulate the narrative of the original thesis and reorganize the sections.
+# 
