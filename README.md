@@ -4,13 +4,26 @@
 More videos here! >> [[Videos](https://www.youtube.com/watch?v=UFRGuUviqhE&list=PLYNMvZ8JbO9YnUwum6Ky8nyXgP2XNNy-a)]
 
 # Project Description
-Ship local path planning (a.k.a. collision avoidance) using the Velocity Obstacle with ship safety zone. 
+Ship local path planning (a.k.a. collision avoidance) using the [Velocity Obstacle](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.56.6352&rep=rep1&type=pdf) with ship safety zone. 
 This was my Master's thesis topic. See the paper if you want. The link here >> [[PDF](http://inha.dcollection.net/public_resource/pdf/200000261477_20220606000607.pdf)]
 
-# How to run
+# How to Run
 Run the demo m-file:
 ```
 >> velocityObstacleDemo
 ```
 
-# 
+# Seudo Code
+```
+INITIALIZE agent position, agent velocity, ship safety domain, obstacles position, obstacle velocity
+WHILE (the agent within the map) {
+  collision cone = COMPUTE(agent velocity, agent radius, obstacle velocity, obstacle raidus)
+  feasible accelerations = COMPUTE(ship dynamics, thruster specification)
+  reachable velocities = feasiable accelerations * time step
+  reachable avoidance velocities = reachable velocities - AREA(collision cone)
+  the best velocity = PICK UP ONE THROUGH THE STRATEGY(reachable avoidance velocitis)
+  agent position <- agent position + (the best velocity * time step)
+  obstacle position <- obstacle position + (obstacle velocity * time step)
+  t <- t + time step
+  }
+```
