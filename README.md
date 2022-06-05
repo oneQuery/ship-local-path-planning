@@ -21,7 +21,7 @@ WHILE (the agent within the map) {
   feasible accelerations = COMPUTE(ship dynamics, thruster specification)
   reachable velocities = feasiable accelerations * time step
   reachable avoidance velocities = reachable velocities - AREA(collision cone)
-  the best velocity = PICK UP ONE THROUGH THE STRATEGY(reachable avoidance velocitis)
+  the best velocity = PICK UP ONE THROUGH THE STRATEGY(reachable avoidance velocities)
   agent position <- agent position + (the best velocity * time step)
   obstacle position <- obstacle position + (obstacle velocity * time step)
   t <- t + time step
