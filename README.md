@@ -5,7 +5,7 @@ More videos here! >> [[Videos](https://www.youtube.com/watch?v=UFRGuUviqhE&list=
 
 # Project Description
 Ship local path planning (a.k.a. collision avoidance) using the [Velocity Obstacle](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.56.6352&rep=rep1&type=pdf) with ship safety zone. 
-This was my Master's thesis topic. See the paper if you want. The link here >> [[PDF](http://inha.dcollection.net/public_resource/pdf/200000261477_20220606000607.pdf)]
+This was my Master's thesis topic. See the paper if you want. The link here >> [[Library](https://inha.primo.exlibrisgroup.com/discovery/fulldisplay?docid=alma991009103061005086&context=L&vid=82KST_INH:INHA&lang=ko&search_scope=Dissertation&adaptor=Local%20Search%20Engine&tab=LibraryCatalog&query=any,contains,%EA%B9%80%ED%9D%AC%EC%88%98&offset=0)]
 
 # How to Run
 Run the demo m-file:
